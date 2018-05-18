@@ -1,0 +1,5 @@
+RcppBVAR 0.1
+-----------
+
+* First public release
+* Added a few trivial functions (freqVAR and Forecast)
