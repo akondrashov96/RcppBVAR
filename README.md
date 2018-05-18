@@ -1,4 +1,4 @@
-[![Travis-CI Build Status](https://travis-ci.org/akondrashov96/rusmaps.svg?branch=master)](https://travis-ci.org/akondrashov96/rusmaps)
+[![Build Status](https://travis-ci.org/akondrashov96/RcppBVAR.svg?branch=master)](https://travis-ci.org/akondrashov96/RcppBVAR)
 
 RcppBVAR v.0.1
 ===============
