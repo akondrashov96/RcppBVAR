@@ -1,11 +1,13 @@
 Package: RcppBVAR
 Type: Package
-Title: What the package does (short line)
-Version: 1.0
+Title: BVAR estimation
+Version: 0.1
 Date: 2018-05-18
-Author: Who wrote it
-Maintainer: Who to complain to <yourfault@somewhere.net>
-Description: More about what it does (maybe more than one line)
-License: What license is it under?
+Author: Artem Kondrashov
+Maintainer: Artem Kondrashov <akondrashov96@gmail.com>
+Description: BVAR estimation in R. Functions are mainly written in C++ for speed.
+License: GPL-3
+LazyData: true
+RoxygenNote: 5.0.1
 Imports: Rcpp (>= 0.12.16)
 LinkingTo: Rcpp, RcppArmadillo
