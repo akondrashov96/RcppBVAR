@@ -6,6 +6,23 @@
 
 using namespace Rcpp;
 
+// BVAR
+List BVAR(arma::mat series, int p, arma::mat C, arma::mat V0, arma::mat Phi0, int df, bool include_mean);
+RcppExport SEXP _RcppBVAR_BVAR(SEXP seriesSEXP, SEXP pSEXP, SEXP CSEXP, SEXP V0SEXP, SEXP Phi0SEXP, SEXP dfSEXP, SEXP include_meanSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type series(seriesSEXP);
+    Rcpp::traits::input_parameter< int >::type p(pSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type C(CSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type V0(V0SEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type Phi0(Phi0SEXP);
+    Rcpp::traits::input_parameter< int >::type df(dfSEXP);
+    Rcpp::traits::input_parameter< bool >::type include_mean(include_meanSEXP);
+    rcpp_result_gen = Rcpp::wrap(BVAR(series, p, C, V0, Phi0, df, include_mean));
+    return rcpp_result_gen;
+END_RCPP
+}
 // Forecast
 List Forecast(List model, int h);
 RcppExport SEXP _RcppBVAR_Forecast(SEXP modelSEXP, SEXP hSEXP) {
@@ -19,14 +36,15 @@ BEGIN_RCPP
 END_RCPP
 }
 // freqVAR
-List freqVAR(NumericMatrix series, int p);
-RcppExport SEXP _RcppBVAR_freqVAR(SEXP seriesSEXP, SEXP pSEXP) {
+List freqVAR(arma::mat series, int p, bool include_mean);
+RcppExport SEXP _RcppBVAR_freqVAR(SEXP seriesSEXP, SEXP pSEXP, SEXP include_meanSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericMatrix >::type series(seriesSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type series(seriesSEXP);
     Rcpp::traits::input_parameter< int >::type p(pSEXP);
-    rcpp_result_gen = Rcpp::wrap(freqVAR(series, p));
+    Rcpp::traits::input_parameter< bool >::type include_mean(include_meanSEXP);
+    rcpp_result_gen = Rcpp::wrap(freqVAR(series, p, include_mean));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -75,8 +93,9 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_RcppBVAR_BVAR", (DL_FUNC) &_RcppBVAR_BVAR, 7},
     {"_RcppBVAR_Forecast", (DL_FUNC) &_RcppBVAR_Forecast, 2},
-    {"_RcppBVAR_freqVAR", (DL_FUNC) &_RcppBVAR_freqVAR, 2},
+    {"_RcppBVAR_freqVAR", (DL_FUNC) &_RcppBVAR_freqVAR, 3},
     {"_RcppBVAR_rcpparma_hello_world", (DL_FUNC) &_RcppBVAR_rcpparma_hello_world, 0},
     {"_RcppBVAR_rcpparma_outerproduct", (DL_FUNC) &_RcppBVAR_rcpparma_outerproduct, 1},
     {"_RcppBVAR_rcpparma_innerproduct", (DL_FUNC) &_RcppBVAR_rcpparma_innerproduct, 1},
