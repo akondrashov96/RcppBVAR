@@ -6,6 +6,31 @@
 
 using namespace Rcpp;
 
+// AR1
+double AR1(arma::vec series, int p);
+RcppExport SEXP _RcppBVAR_AR1(SEXP seriesSEXP, SEXP pSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::vec >::type series(seriesSEXP);
+    Rcpp::traits::input_parameter< int >::type p(pSEXP);
+    rcpp_result_gen = Rcpp::wrap(AR1(series, p));
+    return rcpp_result_gen;
+END_RCPP
+}
+// conj_delta
+arma::vec conj_delta(arma::mat series, arma::vec delt, bool AR1type);
+RcppExport SEXP _RcppBVAR_conj_delta(SEXP seriesSEXP, SEXP deltSEXP, SEXP AR1typeSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type series(seriesSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type delt(deltSEXP);
+    Rcpp::traits::input_parameter< bool >::type AR1type(AR1typeSEXP);
+    rcpp_result_gen = Rcpp::wrap(conj_delta(series, delt, AR1type));
+    return rcpp_result_gen;
+END_RCPP
+}
 // BVAR
 List BVAR(arma::mat series, int p, arma::mat C, arma::mat V0, arma::mat Phi0, int df, bool include_mean);
 RcppExport SEXP _RcppBVAR_BVAR(SEXP seriesSEXP, SEXP pSEXP, SEXP CSEXP, SEXP V0SEXP, SEXP Phi0SEXP, SEXP dfSEXP, SEXP include_meanSEXP) {
@@ -93,6 +118,8 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_RcppBVAR_AR1", (DL_FUNC) &_RcppBVAR_AR1, 2},
+    {"_RcppBVAR_conj_delta", (DL_FUNC) &_RcppBVAR_conj_delta, 3},
     {"_RcppBVAR_BVAR", (DL_FUNC) &_RcppBVAR_BVAR, 7},
     {"_RcppBVAR_Forecast", (DL_FUNC) &_RcppBVAR_Forecast, 2},
     {"_RcppBVAR_freqVAR", (DL_FUNC) &_RcppBVAR_freqVAR, 3},
