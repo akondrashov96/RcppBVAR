@@ -1,5 +1,5 @@
 #include <RcppArmadillo.h>
-//[[Rcpp::plugins(cpp14)]]
+//[[Rcpp::plugins(cpp11)]]
 //[[Rcpp::depends(RcppArmadillo)]]
 
 using namespace Rcpp;
