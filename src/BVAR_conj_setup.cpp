@@ -1,5 +1,5 @@
 #include <RcppArmadillo.h>
-
+//[[Rcpp::plugins(cpp14)]]
 //[[Rcpp::depends(RcppArmadillo)]]
 
 using namespace Rcpp;
@@ -23,7 +23,7 @@ List prepData(arma::mat series, int p, bool include_const = true) {
   if (include_const) {
     arma::vec intcpt(n - p) ;
     intcpt.fill(1) ;
-    X = join_rows(intcpt, X) ;
+    X = join_rows(X, intcpt) ;
   }
   
   return List::create(Named("Y") = Y,
@@ -101,7 +101,7 @@ arma::vec conj_delta(arma::mat series, arma::vec delt, bool deltAR1type = false)
 }
 
 //[[Rcpp::export()]]
-arma::vec sigma_vec(arma::mat series, int sig2_lag, bool carriero_hack = false) {
+arma::vec conj_sigma(arma::mat series, int sig2_lag, bool carriero_hack = false) {
   
   int m = series.n_cols, n = series.n_rows;
   
@@ -135,7 +135,7 @@ arma::vec sigma_vec(arma::mat series, int sig2_lag, bool carriero_hack = false) 
 //[[Rcpp::export()]]
 List conj_lam2dum(arma::mat series, arma::vec lam, int p, arma::vec delt, 
                   int s2_lag = 1, 
-                  arma::mat exo = mat(0, 0), std::string y_bar_type = "initial",
+                  Rcpp::Nullable<arma::mat> Z = R_NilValue, std::string y_bar_type = "initial",
                   bool include_const = true, bool delttypeAR1 = false, bool carriero_hack = false) {
   
   double l_1 = lam[0];
@@ -155,12 +155,15 @@ List conj_lam2dum(arma::mat series, arma::vec lam, int p, arma::vec delt,
   // add const if needed (as an exogenous variable)
   int d = 0;
 
-  //Rcout << "Check exo empty: " << exo.is_empty() << endl;
+  //Rcout << "Check Z empty: " << Z.isNotNull() << endl;
   
-  if (exo.is_empty()) {
-    d = 1 * include_const;
-  } else {
+  arma::mat exo;
+  
+  if (Z.isNotNull()) {
+    exo = as<mat>(Z);
     d = exo.n_cols + 1 * include_const;
+  } else {
+    d = 1 * include_const;
   }
   
   //Rcout << "d = " << d << endl;
@@ -181,7 +184,7 @@ List conj_lam2dum(arma::mat series, arma::vec lam, int p, arma::vec delt,
   
   // estimate sigma^2 from AR(p) process (note: Carriero recommends AR(1) )
   arma::vec sigmas_sq;
-  sigmas_sq = sigma_vec(series, s2_lag, carriero_hack);
+  sigmas_sq = conj_sigma(series, s2_lag, carriero_hack);
   
   //Rcout << "sigmas_sq" << endl << sigmas_sq << endl;
   
@@ -316,23 +319,81 @@ List conj_lam2dum(arma::mat series, arma::vec lam, int p, arma::vec delt,
 }
 
 //[[Rcpp::export()]]
-arma::vec conj_dum2hyp() {
-  return 0;
+List conj_dum2hyp(arma::mat Y_star, arma::mat X_star) {
+  
+  arma::mat U;
+  arma::vec s;
+  arma::mat V;
+  svd(U, s, V, X_star);
+  
+  arma::mat diag_inv = zeros<mat>(s.n_elem, s.n_elem);
+  diag_inv.diag() = 1/s;
+  
+  //Rcout << "diag_inv" << endl << diag_inv << endl;
+  
+  arma::mat Omega_root = V * diag_inv * V.t();
+  arma::mat Omega = Omega_root * Omega_root;
+  
+  arma::mat Phi_star = Omega * (X_star.t() * Y_star);
+  arma::mat E_star = Y_star - X_star * Phi_star;
+  arma::mat S = E_star.t() * E_star;
+  
+  return List::create(Named("Omega_root") = Omega_root,
+                      Named("Omega") = Omega,
+                      Named("E_star") = E_star,
+                      Named("S") = S,
+                      Named("Phi_star") = Phi_star,
+                      Named("s") = s,
+                      Named("U") = U,
+                      Named("V") = V);
 }
 
 //[[Rcpp::export()]]
-List conj_sim() {
-  return 0;
+List conj_simulate(int v_post, arma::mat Omega_root_post, arma::mat S_post, arma::mat Phi_post, 
+                   bool verbose = false, int keep = 10, int chains = 1) {
+  
+  int k = Phi_post.n_rows, m = Phi_post.n_cols;
+  
+  List sims;
+  arma::mat answer = zeros<mat>(keep, m * k + m * m);
+  arma::mat Sigma, V, Phi;
+  arma::vec Phi_vec, Sigma_vec, plug_in;
+  
+  for (int chain = 0 ; chain < chains ; ++chain) {
+    if (verbose) {
+      Rcout << "===============================================" << endl;
+      Rcout << "Chain: " << chain + 1 << " out of " << chains << endl;
+      Rcout << "===============================================" << endl;
+    }
+    for (int i = 0 ; i < keep ; ++i ) {
+      if (verbose && (i % 1000 == 0) ) {
+        Rcout << "Iteration " << i + 1 << " out of " << keep << endl;
+      }
+      
+      Sigma = iwishrnd(S_post, v_post);
+      V = randn<mat>(k, m);
+      Phi = Phi_post + Omega_root_post * V * chol(Sigma);
+      
+      Phi_vec = vectorise(Phi);
+      Sigma_vec = vectorise(Sigma);
+      plug_in = join_cols(Phi_vec, Sigma_vec);
+      
+      answer.row(i) = plug_in.t();
+      
+    }
+    Rcout << endl;
+    sims["chain" + std::to_string(chain + 1)] = answer;
+    answer = zeros<mat>(keep, m * k + m * m);
+  }
+  
+  return sims;
 }
 
 //[[Rcpp::export()]]
 List BVAR_cniw_setup (arma::mat series, arma::vec lam, int p, arma::vec delt, int v_prior, 
-                      int s2_lag = 1, 
-                      arma::mat exo = mat(0, 0), std::string y_bar_type = "initial",
+                      int s2_lag = 1,
+                      Rcpp::Nullable<arma::mat> Z = R_NilValue, std::string y_bar_type = "initial",
                       bool include_const = true, bool delttypeAR1 = false, bool carriero_hack = false) {
-  
-  arma::mat exo1 = mat(0, 0);
-  Rcout << "check1" << exo1 << endl;
   
   List data = prepData(series, p, include_const);
   
@@ -340,12 +401,14 @@ List BVAR_cniw_setup (arma::mat series, arma::vec lam, int p, arma::vec delt, in
   arma::mat Y = data["Y"];
   int m = data["k"];
   
-  List dum = conj_lam2dum(series, lam, p, delt, s2_lag, exo, 
+  List dum = conj_lam2dum(series, lam, p, delt, s2_lag, Z, 
                           y_bar_type, include_const, delttypeAR1, carriero_hack);
   
-  if (v_prior == -1) {
+  Rcout << "v_prior" << v_prior << endl;
+  if (v_prior < 0) {
     v_prior = m + 2;
   }
+  Rcout << "v_prior" << v_prior << endl;
   
   return List::create(Named("X") = X,
                       Named("Y") = Y,
@@ -357,6 +420,40 @@ List BVAR_cniw_setup (arma::mat series, arma::vec lam, int p, arma::vec delt, in
   
 }
 
-List BVAR_conj_est() {
-  return 0;
+//[[Rcpp::export()]]
+List BVAR_cniw_est(List setup, int keep, bool verbose = false, int n_chains = 1) {
+  
+  arma::mat X = setup["X"];
+  arma::mat Y = setup["Y"];
+  arma::mat X_plus = setup["X_plus"];
+  arma::mat Y_plus = setup["Y_plus"];
+  
+  int nT = Y.n_rows;
+  
+  arma::mat X_star = join_cols(X_plus, X);
+  arma::mat Y_star = join_cols(Y_plus, Y);
+  
+  if (verbose) {
+    Rcout << "Calculating posterior hyperparameters" << endl;
+  }
+  
+  List post = conj_dum2hyp(Y_star, X_star);
+  int v_prior = setup["v_prior"];
+  int v_post = v_prior + nT;
+  
+  if (verbose) {
+    Rcout << "Simulating..." << endl;
+  }
+  if (keep > 0) {
+    setup["sample"] = conj_simulate(v_post, post["Omega_root"], post["S"], post["Phi_star"], 
+                              verbose, keep, n_chains);
+  }
+  
+  setup["v_post"] = v_post;
+  setup["S_post"] = post["S"];
+  setup["Omega_post"] = post["Omega"];
+  setup["Phi_post"] = post["Phi_star"];
+  
+  
+  return setup;
 }

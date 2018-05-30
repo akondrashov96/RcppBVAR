@@ -69,22 +69,22 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// sigma_vec
-arma::vec sigma_vec(arma::mat series, int sig2_lag, bool carriero_hack);
-RcppExport SEXP _RcppBVAR_sigma_vec(SEXP seriesSEXP, SEXP sig2_lagSEXP, SEXP carriero_hackSEXP) {
+// conj_sigma
+arma::vec conj_sigma(arma::mat series, int sig2_lag, bool carriero_hack);
+RcppExport SEXP _RcppBVAR_conj_sigma(SEXP seriesSEXP, SEXP sig2_lagSEXP, SEXP carriero_hackSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< arma::mat >::type series(seriesSEXP);
     Rcpp::traits::input_parameter< int >::type sig2_lag(sig2_lagSEXP);
     Rcpp::traits::input_parameter< bool >::type carriero_hack(carriero_hackSEXP);
-    rcpp_result_gen = Rcpp::wrap(sigma_vec(series, sig2_lag, carriero_hack));
+    rcpp_result_gen = Rcpp::wrap(conj_sigma(series, sig2_lag, carriero_hack));
     return rcpp_result_gen;
 END_RCPP
 }
 // conj_lam2dum
-List conj_lam2dum(arma::mat series, arma::vec lam, int p, arma::vec delt, int s2_lag, arma::mat exo, std::string y_bar_type, bool include_const, bool delttypeAR1, bool carriero_hack);
-RcppExport SEXP _RcppBVAR_conj_lam2dum(SEXP seriesSEXP, SEXP lamSEXP, SEXP pSEXP, SEXP deltSEXP, SEXP s2_lagSEXP, SEXP exoSEXP, SEXP y_bar_typeSEXP, SEXP include_constSEXP, SEXP delttypeAR1SEXP, SEXP carriero_hackSEXP) {
+List conj_lam2dum(arma::mat series, arma::vec lam, int p, arma::vec delt, int s2_lag, Rcpp::Nullable<arma::mat> Z, std::string y_bar_type, bool include_const, bool delttypeAR1, bool carriero_hack);
+RcppExport SEXP _RcppBVAR_conj_lam2dum(SEXP seriesSEXP, SEXP lamSEXP, SEXP pSEXP, SEXP deltSEXP, SEXP s2_lagSEXP, SEXP ZSEXP, SEXP y_bar_typeSEXP, SEXP include_constSEXP, SEXP delttypeAR1SEXP, SEXP carriero_hackSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -93,38 +93,47 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type p(pSEXP);
     Rcpp::traits::input_parameter< arma::vec >::type delt(deltSEXP);
     Rcpp::traits::input_parameter< int >::type s2_lag(s2_lagSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type exo(exoSEXP);
+    Rcpp::traits::input_parameter< Rcpp::Nullable<arma::mat> >::type Z(ZSEXP);
     Rcpp::traits::input_parameter< std::string >::type y_bar_type(y_bar_typeSEXP);
     Rcpp::traits::input_parameter< bool >::type include_const(include_constSEXP);
     Rcpp::traits::input_parameter< bool >::type delttypeAR1(delttypeAR1SEXP);
     Rcpp::traits::input_parameter< bool >::type carriero_hack(carriero_hackSEXP);
-    rcpp_result_gen = Rcpp::wrap(conj_lam2dum(series, lam, p, delt, s2_lag, exo, y_bar_type, include_const, delttypeAR1, carriero_hack));
+    rcpp_result_gen = Rcpp::wrap(conj_lam2dum(series, lam, p, delt, s2_lag, Z, y_bar_type, include_const, delttypeAR1, carriero_hack));
     return rcpp_result_gen;
 END_RCPP
 }
 // conj_dum2hyp
-arma::vec conj_dum2hyp();
-RcppExport SEXP _RcppBVAR_conj_dum2hyp() {
+List conj_dum2hyp(arma::mat Y_star, arma::mat X_star);
+RcppExport SEXP _RcppBVAR_conj_dum2hyp(SEXP Y_starSEXP, SEXP X_starSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    rcpp_result_gen = Rcpp::wrap(conj_dum2hyp());
+    Rcpp::traits::input_parameter< arma::mat >::type Y_star(Y_starSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type X_star(X_starSEXP);
+    rcpp_result_gen = Rcpp::wrap(conj_dum2hyp(Y_star, X_star));
     return rcpp_result_gen;
 END_RCPP
 }
-// conj_sim
-List conj_sim();
-RcppExport SEXP _RcppBVAR_conj_sim() {
+// conj_simulate
+List conj_simulate(int v_post, arma::mat Omega_root_post, arma::mat S_post, arma::mat Phi_post, bool verbose, int keep, int chains);
+RcppExport SEXP _RcppBVAR_conj_simulate(SEXP v_postSEXP, SEXP Omega_root_postSEXP, SEXP S_postSEXP, SEXP Phi_postSEXP, SEXP verboseSEXP, SEXP keepSEXP, SEXP chainsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    rcpp_result_gen = Rcpp::wrap(conj_sim());
+    Rcpp::traits::input_parameter< int >::type v_post(v_postSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type Omega_root_post(Omega_root_postSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type S_post(S_postSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type Phi_post(Phi_postSEXP);
+    Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
+    Rcpp::traits::input_parameter< int >::type keep(keepSEXP);
+    Rcpp::traits::input_parameter< int >::type chains(chainsSEXP);
+    rcpp_result_gen = Rcpp::wrap(conj_simulate(v_post, Omega_root_post, S_post, Phi_post, verbose, keep, chains));
     return rcpp_result_gen;
 END_RCPP
 }
 // BVAR_cniw_setup
-List BVAR_cniw_setup(arma::mat series, arma::vec lam, int p, arma::vec delt, int v_prior, int s2_lag, arma::mat exo, std::string y_bar_type, bool include_const, bool delttypeAR1, bool carriero_hack);
-RcppExport SEXP _RcppBVAR_BVAR_cniw_setup(SEXP seriesSEXP, SEXP lamSEXP, SEXP pSEXP, SEXP deltSEXP, SEXP v_priorSEXP, SEXP s2_lagSEXP, SEXP exoSEXP, SEXP y_bar_typeSEXP, SEXP include_constSEXP, SEXP delttypeAR1SEXP, SEXP carriero_hackSEXP) {
+List BVAR_cniw_setup(arma::mat series, arma::vec lam, int p, arma::vec delt, int v_prior, int s2_lag, Rcpp::Nullable<arma::mat> Z, std::string y_bar_type, bool include_const, bool delttypeAR1, bool carriero_hack);
+RcppExport SEXP _RcppBVAR_BVAR_cniw_setup(SEXP seriesSEXP, SEXP lamSEXP, SEXP pSEXP, SEXP deltSEXP, SEXP v_priorSEXP, SEXP s2_lagSEXP, SEXP ZSEXP, SEXP y_bar_typeSEXP, SEXP include_constSEXP, SEXP delttypeAR1SEXP, SEXP carriero_hackSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -134,12 +143,26 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::vec >::type delt(deltSEXP);
     Rcpp::traits::input_parameter< int >::type v_prior(v_priorSEXP);
     Rcpp::traits::input_parameter< int >::type s2_lag(s2_lagSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type exo(exoSEXP);
+    Rcpp::traits::input_parameter< Rcpp::Nullable<arma::mat> >::type Z(ZSEXP);
     Rcpp::traits::input_parameter< std::string >::type y_bar_type(y_bar_typeSEXP);
     Rcpp::traits::input_parameter< bool >::type include_const(include_constSEXP);
     Rcpp::traits::input_parameter< bool >::type delttypeAR1(delttypeAR1SEXP);
     Rcpp::traits::input_parameter< bool >::type carriero_hack(carriero_hackSEXP);
-    rcpp_result_gen = Rcpp::wrap(BVAR_cniw_setup(series, lam, p, delt, v_prior, s2_lag, exo, y_bar_type, include_const, delttypeAR1, carriero_hack));
+    rcpp_result_gen = Rcpp::wrap(BVAR_cniw_setup(series, lam, p, delt, v_prior, s2_lag, Z, y_bar_type, include_const, delttypeAR1, carriero_hack));
+    return rcpp_result_gen;
+END_RCPP
+}
+// BVAR_cniw_est
+List BVAR_cniw_est(List setup, int keep, bool verbose, int n_chains);
+RcppExport SEXP _RcppBVAR_BVAR_cniw_est(SEXP setupSEXP, SEXP keepSEXP, SEXP verboseSEXP, SEXP n_chainsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< List >::type setup(setupSEXP);
+    Rcpp::traits::input_parameter< int >::type keep(keepSEXP);
+    Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
+    Rcpp::traits::input_parameter< int >::type n_chains(n_chainsSEXP);
+    rcpp_result_gen = Rcpp::wrap(BVAR_cniw_est(setup, keep, verbose, n_chains));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -229,17 +252,21 @@ BEGIN_RCPP
 END_RCPP
 }
 
+RcppExport SEXP _RcppBVAR_conj_sim();
+RcppExport SEXP _RcppBVAR_sigma_vec(SEXP, SEXP, SEXP);
+
 static const R_CallMethodDef CallEntries[] = {
     {"_RcppBVAR_AR1", (DL_FUNC) &_RcppBVAR_AR1, 2},
     {"_RcppBVAR_conj_delta", (DL_FUNC) &_RcppBVAR_conj_delta, 3},
     {"_RcppBVAR_prepData", (DL_FUNC) &_RcppBVAR_prepData, 3},
     {"_RcppBVAR_ARp", (DL_FUNC) &_RcppBVAR_ARp, 2},
     {"_RcppBVAR_conj_delta", (DL_FUNC) &_RcppBVAR_conj_delta, 3},
-    {"_RcppBVAR_sigma_vec", (DL_FUNC) &_RcppBVAR_sigma_vec, 3},
+    {"_RcppBVAR_conj_sigma", (DL_FUNC) &_RcppBVAR_conj_sigma, 3},
     {"_RcppBVAR_conj_lam2dum", (DL_FUNC) &_RcppBVAR_conj_lam2dum, 10},
-    {"_RcppBVAR_conj_dum2hyp", (DL_FUNC) &_RcppBVAR_conj_dum2hyp, 0},
-    {"_RcppBVAR_conj_sim", (DL_FUNC) &_RcppBVAR_conj_sim, 0},
+    {"_RcppBVAR_conj_dum2hyp", (DL_FUNC) &_RcppBVAR_conj_dum2hyp, 2},
+    {"_RcppBVAR_conj_simulate", (DL_FUNC) &_RcppBVAR_conj_simulate, 7},
     {"_RcppBVAR_BVAR_cniw_setup", (DL_FUNC) &_RcppBVAR_BVAR_cniw_setup, 11},
+    {"_RcppBVAR_BVAR_cniw_est", (DL_FUNC) &_RcppBVAR_BVAR_cniw_est, 4},
     {"_RcppBVAR_BVAR", (DL_FUNC) &_RcppBVAR_BVAR, 7},
     {"_RcppBVAR_Forecast", (DL_FUNC) &_RcppBVAR_Forecast, 2},
     {"_RcppBVAR_freqVAR", (DL_FUNC) &_RcppBVAR_freqVAR, 3},
@@ -247,6 +274,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_RcppBVAR_rcpparma_outerproduct", (DL_FUNC) &_RcppBVAR_rcpparma_outerproduct, 1},
     {"_RcppBVAR_rcpparma_innerproduct", (DL_FUNC) &_RcppBVAR_rcpparma_innerproduct, 1},
     {"_RcppBVAR_rcpparma_bothproducts", (DL_FUNC) &_RcppBVAR_rcpparma_bothproducts, 1},
+    {"_RcppBVAR_conj_sim",              (DL_FUNC) &_RcppBVAR_conj_sim,               0},
+    {"_RcppBVAR_sigma_vec",             (DL_FUNC) &_RcppBVAR_sigma_vec,              3},
     {NULL, NULL, 0}
 };
 
