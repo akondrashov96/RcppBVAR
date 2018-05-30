@@ -184,11 +184,6 @@ BEGIN_RCPP
 END_RCPP
 }
 
-RcppExport SEXP _RcppBVAR_rcpparma_bothproducts(SEXP);
-RcppExport SEXP _RcppBVAR_rcpparma_hello_world();
-RcppExport SEXP _RcppBVAR_rcpparma_innerproduct(SEXP);
-RcppExport SEXP _RcppBVAR_rcpparma_outerproduct(SEXP);
-
 static const R_CallMethodDef CallEntries[] = {
     {"_RcppBVAR_prepData", (DL_FUNC) &_RcppBVAR_prepData, 3},
     {"_RcppBVAR_ARp", (DL_FUNC) &_RcppBVAR_ARp, 2},
@@ -202,10 +197,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_RcppBVAR_BVAR", (DL_FUNC) &_RcppBVAR_BVAR, 7},
     {"_RcppBVAR_Forecast", (DL_FUNC) &_RcppBVAR_Forecast, 2},
     {"_RcppBVAR_freqVAR", (DL_FUNC) &_RcppBVAR_freqVAR, 3},
-    {"_RcppBVAR_rcpparma_bothproducts", (DL_FUNC) &_RcppBVAR_rcpparma_bothproducts,  1},
-    {"_RcppBVAR_rcpparma_hello_world",  (DL_FUNC) &_RcppBVAR_rcpparma_hello_world,   0},
-    {"_RcppBVAR_rcpparma_innerproduct", (DL_FUNC) &_RcppBVAR_rcpparma_innerproduct,  1},
-    {"_RcppBVAR_rcpparma_outerproduct", (DL_FUNC) &_RcppBVAR_rcpparma_outerproduct,  1},
     {NULL, NULL, 0}
 };
 
