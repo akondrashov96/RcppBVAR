@@ -9,6 +9,38 @@ conj_delta <- function(series, delt, AR1type = FALSE) {
     .Call(`_RcppBVAR_conj_delta`, series, delt, AR1type)
 }
 
+prepData <- function(series, p, include_const = TRUE) {
+    .Call(`_RcppBVAR_prepData`, series, p, include_const)
+}
+
+ARp <- function(series, p = 1L) {
+    .Call(`_RcppBVAR_ARp`, series, p)
+}
+
+conj_delta <- function(series, delt, deltAR1type = FALSE) {
+    .Call(`_RcppBVAR_conj_delta`, series, delt, deltAR1type)
+}
+
+sigma_vec <- function(series, sig2_lag, carriero_hack = FALSE) {
+    .Call(`_RcppBVAR_sigma_vec`, series, sig2_lag, carriero_hack)
+}
+
+conj_lam2dum <- function(series, lam, p, delt, s2_lag = 1L, exo, y_bar_type = "initial", include_const = TRUE, delttypeAR1 = FALSE, carriero_hack = FALSE) {
+    .Call(`_RcppBVAR_conj_lam2dum`, series, lam, p, delt, s2_lag, exo, y_bar_type, include_const, delttypeAR1, carriero_hack)
+}
+
+conj_dum2hyp <- function() {
+    .Call(`_RcppBVAR_conj_dum2hyp`)
+}
+
+conj_sim <- function() {
+    .Call(`_RcppBVAR_conj_sim`)
+}
+
+BVAR_cniw_setup <- function(series, lam, p, delt, v_prior, s2_lag = 1L, exo, y_bar_type = "initial", include_const = TRUE, delttypeAR1 = FALSE, carriero_hack = FALSE) {
+    .Call(`_RcppBVAR_BVAR_cniw_setup`, series, lam, p, delt, v_prior, s2_lag, exo, y_bar_type, include_const, delttypeAR1, carriero_hack)
+}
+
 BVAR <- function(series, p, C, V0, Phi0, df = 5L, include_mean = TRUE) {
     .Call(`_RcppBVAR_BVAR`, series, p, C, V0, Phi0, df, include_mean)
 }
