@@ -49,19 +49,3 @@ freqVAR <- function(series, p, include_mean = TRUE) {
     .Call(`_RcppBVAR_freqVAR`, series, p, include_mean)
 }
 
-rcpparma_hello_world <- function() {
-    .Call(`_RcppBVAR_rcpparma_hello_world`)
-}
-
-rcpparma_outerproduct <- function(x) {
-    .Call(`_RcppBVAR_rcpparma_outerproduct`, x)
-}
-
-rcpparma_innerproduct <- function(x) {
-    .Call(`_RcppBVAR_rcpparma_innerproduct`, x)
-}
-
-rcpparma_bothproducts <- function(x) {
-    .Call(`_RcppBVAR_rcpparma_bothproducts`, x)
-}
-
