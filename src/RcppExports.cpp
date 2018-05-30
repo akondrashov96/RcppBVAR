@@ -252,9 +252,6 @@ BEGIN_RCPP
 END_RCPP
 }
 
-RcppExport SEXP _RcppBVAR_conj_sim();
-RcppExport SEXP _RcppBVAR_sigma_vec(SEXP, SEXP, SEXP);
-
 static const R_CallMethodDef CallEntries[] = {
     {"_RcppBVAR_AR1", (DL_FUNC) &_RcppBVAR_AR1, 2},
     {"_RcppBVAR_conj_delta", (DL_FUNC) &_RcppBVAR_conj_delta, 3},
@@ -274,8 +271,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_RcppBVAR_rcpparma_outerproduct", (DL_FUNC) &_RcppBVAR_rcpparma_outerproduct, 1},
     {"_RcppBVAR_rcpparma_innerproduct", (DL_FUNC) &_RcppBVAR_rcpparma_innerproduct, 1},
     {"_RcppBVAR_rcpparma_bothproducts", (DL_FUNC) &_RcppBVAR_rcpparma_bothproducts, 1},
-    {"_RcppBVAR_conj_sim",              (DL_FUNC) &_RcppBVAR_conj_sim,               0},
-    {"_RcppBVAR_sigma_vec",             (DL_FUNC) &_RcppBVAR_sigma_vec,              3},
     {NULL, NULL, 0}
 };
 
