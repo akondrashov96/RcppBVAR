@@ -1,5 +1,9 @@
-RcppBVAR 0.1
------------
+RcppBVAR v.0.5
+--------------
+* Added setup and estimation functions for Conjugate Normal-Inverse Wishart BVAR.
+
+RcppBVAR v.0.1
+--------------
 
 * First public release
 * Added a few trivial functions (freqVAR and Forecast)

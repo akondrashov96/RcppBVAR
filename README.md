@@ -1,6 +1,4 @@
-[![Build Status](https://travis-ci.org/akondrashov96/RcppBVAR.svg?branch=master)](https://travis-ci.org/akondrashov96/RcppBVAR)
-
-RcppBVAR v.0.1
+RcppBVAR v.0.5
 ===============
 
 RcppBVAR is an R package for estimation of BVAR models. To enhance the speed of calculations, the code is written in C++. Note, that the package is in early development. Thanks!
