@@ -5,6 +5,22 @@
 using namespace Rcpp;
 using namespace arma;
 
+// calcquantiles 
+//[[Rcpp::export()]]
+arma::mat CalcQuantiles(const arma::mat& X, const arma::vec& q) {
+  arma::mat Y = arma::sort(X, "ascending", 0);
+  arma::vec probL = (1 - reverse(q)/100)/2 - std::numeric_limits<double>::epsilon();
+  arma::vec probH = (1 + q/100)/2 - std::numeric_limits<double>::epsilon();
+  arma::vec prob = join_cols(probL, probH);
+  
+  arma::mat quantiles;
+  for (int i = 0 ; i < prob.n_elem ; ++i) {
+    quantiles = join_cols(quantiles, vectorise(Y.row(Y.n_rows*prob[i])).t());
+  }
+  
+  return quantiles;
+}
+
 // creates X and Y matrices from provided series
 //[[Rcpp::export()]]
 List prepData(arma::mat series, int p, bool include_const = true) {
@@ -70,32 +86,26 @@ arma::vec conj_delta(arma::mat series, arma::vec delt, bool deltAR1type = false)
   delta = delt;
   List coef;
   
-  try {
-    if (deltAR1type) {
-      delta.set_size(m);
-      delta.fill(1);
-      arma::vec y_uni(n);
+  if (deltAR1type) {
+    delta.set_size(m);
+    delta.fill(1);
+    arma::vec y_uni(n);
+    
+    for (int i = 0 ; i < m ; ++i) {
       
-      for (int i = 0 ; i < m ; ++i) {
-        
-        y_uni = series.col(i);
-        coef = ARp(y_uni);
-        delta[i] = coef["AR1"];
-        if (delta[i] > 1) {
-          delta[i] = 1;
-        }
+      y_uni = series.col(i);
+      coef = ARp(y_uni);
+      delta[i] = coef["AR1"];
+      if (delta[i] > 1) {
+        delta[i] = 1;
       }
-    } else if (delt.n_elem == 1) {
-      delta.set_size(m);
-      delta.fill(delt(0));
-    } else if (delt.n_elem != m) {
-      throw std::range_error("Length of delta should be equal to 1 or m");
     }
-  } catch(std::exception &ex) {	
-    forward_exception_to_r(ex);
-  } catch(...) { 
-    ::Rf_error("C++ exception (unknown reason)"); 
-  }
+  } else if (delt.n_elem == 1) {
+    delta.set_size(m);
+    delta.fill(delt(0));
+  } else if (delt.n_elem != m) {
+    Rcpp::stop("Length of delta should be equal to 1 or m");
+  }  
   
   return delta;
 }
@@ -108,14 +118,11 @@ arma::vec conj_sigma(arma::mat series, int sig2_lag, bool carriero_hack = false)
   arma::vec sig2(m);
   arma::vec y_uni(n);
   List AResult;
-  NumericVector resid;
   
   for (int i = 0 ; i < m ; ++i) {
     y_uni = series.col(i);
     AResult = ARp(y_uni, sig2_lag);
-    resid = AResult["res"];
-    
-    arma::vec res = resid;
+    arma::vec res = as<mat>(AResult["res"]);
     
     sig2(i) = accu(res % res) / (res.n_elem - sig2_lag - 1);
     
@@ -145,8 +152,6 @@ List conj_lam2dum(arma::mat series, arma::vec lam, int p, arma::vec delt,
   double l_const = lam[4];
   double l_exo = lam[5];
   
-  //Rcout << l_1 << ' ' << l_lag << ' ' << l_sc << ' ' << ' ' << l_io << ' ' << l_const << endl;
-  
   // m - number of end vars, n - number of obs
   int m = series.n_cols, n = series.n_rows;
   
@@ -154,8 +159,6 @@ List conj_lam2dum(arma::mat series, arma::vec lam, int p, arma::vec delt,
   
   // add const if needed (as an exogenous variable)
   int d = 0;
-
-  //Rcout << "Check Z empty: " << Z.isNotNull() << endl;
   
   arma::mat exo;
   
@@ -165,8 +168,6 @@ List conj_lam2dum(arma::mat series, arma::vec lam, int p, arma::vec delt,
   } else {
     d = 1 * include_const;
   }
-  
-  //Rcout << "d = " << d << endl;
   
   if (include_const) {
     arma::vec intcpt(n) ;
@@ -180,23 +181,17 @@ List conj_lam2dum(arma::mat series, arma::vec lam, int p, arma::vec delt,
   // create delta vector from data and description
   arma::vec delta = conj_delta(series, delt, delttypeAR1);
   
-  //Rcout << "delta" << endl << delta << endl;
-  
   // estimate sigma^2 from AR(p) process (note: Carriero recommends AR(1) )
   arma::vec sigmas_sq;
   sigmas_sq = conj_sigma(series, s2_lag, carriero_hack);
-  
-  //Rcout << "sigmas_sq" << endl << sigmas_sq << endl;
   
   // get y_bar
   int sc_io_numrows = p;
   if (y_bar_type == "all") {
     sc_io_numrows = n; 
   } else if (y_bar_type != "initial") {
-    //Rcout << "y_bar_type not recognised. Set to  'initial' ";
+    Rcout << "y_bar_type not recognised. Set to  'initial' ";
   }
-  
-  //Rcout << "numrows: " << sc_io_numrows << endl;
   
   arma::vec y_bar = vectorise(mean(series.rows(0, sc_io_numrows - 1), 0));
   
@@ -221,9 +216,6 @@ List conj_lam2dum(arma::mat series, arma::vec lam, int p, arma::vec delt,
     X_sc = join_rows(kron(temp, Y_sc), exo_dummy);
   }
   
-  //Rcout << "Y_sc = " << endl << Y_sc << endl;
-  //Rcout << "X_sc = " << endl << X_sc << endl;
-  
   // io: Initial observation
   arma::mat Y_io, X_io;
   
@@ -234,10 +226,7 @@ List conj_lam2dum(arma::mat series, arma::vec lam, int p, arma::vec delt,
     }
   X_io = join_cols(X_io, z_bar / l_io);
   }
-  
-  //Rcout << "Y_io = " << endl << Y_io << endl;
-  //Rcout << "X_io = " << endl << X_io << endl;
-  
+
   // dummy cNIW
   arma::mat y_cniw_block_1, y_cniw_block_2, y_cniw_block_3, y_cniw_block_4;
   
@@ -276,29 +265,15 @@ List conj_lam2dum(arma::mat series, arma::vec lam, int p, arma::vec delt,
       x_cniw_block_3 = join_rows(x_cniw_block_3, temp3);
     }
     
-    //Rcout << "pass1" << endl;
-    
     if (d > 1) {
       arma::vec temp4 = ones<vec>(include_const);
       temp4 = temp4 / l_exo;
       x_cniw_block_3 = join_cols(x_cniw_block_3, temp4);
     }
     
-    //Rcout << "x_cniw_block_1" << endl << x_cniw_block_1 << endl;
-    //Rcout << "x_cniw_block_2" << endl << x_cniw_block_2 << endl;
-    //Rcout << "x_cniw_block_3" << endl << x_cniw_block_3 << endl;
-    
-    //Rcout << "y_cniw_block_1" << endl << y_cniw_block_1 << endl;
-    //Rcout << "y_cniw_block_2" << endl << y_cniw_block_2 << endl;
-    //Rcout << "y_cniw_block_3" << endl << y_cniw_block_3 << endl;
-    //Rcout << "y_cniw_block_4" << endl << y_cniw_block_4 << endl;
-    
     arma::mat X_cniw = join_cols(x_cniw_block_1, x_cniw_block_2);
     X_cniw = join_cols(X_cniw, x_cniw_block_3);
-    
-    ////Rcout << "Y_cniw" << endl << Y_cniw << endl;
-    ////Rcout << "X_cniw" << endl << X_cniw << endl;
-    
+
     // Create X_plus and Y_plus
     
     arma::mat X_plus = join_cols(X_cniw, X_sc);
@@ -328,8 +303,6 @@ List conj_dum2hyp(arma::mat Y_star, arma::mat X_star) {
   
   arma::mat diag_inv = zeros<mat>(s.n_elem, s.n_elem);
   diag_inv.diag() = 1/s;
-  
-  //Rcout << "diag_inv" << endl << diag_inv << endl;
   
   arma::mat Omega_root = V * diag_inv * V.t();
   arma::mat Omega = Omega_root * Omega_root;
@@ -381,11 +354,13 @@ List conj_simulate(int v_post, arma::mat Omega_root_post, arma::mat S_post, arma
       answer.row(i) = plug_in.t();
       
     }
-    Rcout << endl;
+    if (verbose) {
+      Rcout << endl;
+    }
     sims["chain" + std::to_string(chain + 1)] = answer;
     answer = zeros<mat>(keep, m * k + m * m);
   }
-  
+
   return sims;
 }
 
@@ -404,11 +379,9 @@ List BVAR_cniw_setup (arma::mat series, arma::vec lam, int p, arma::vec delt, in
   List dum = conj_lam2dum(series, lam, p, delt, s2_lag, Z, 
                           y_bar_type, include_const, delttypeAR1, carriero_hack);
   
-  Rcout << "v_prior" << v_prior << endl;
   if (v_prior < 0) {
     v_prior = m + 2;
   }
-  Rcout << "v_prior" << v_prior << endl;
   
   return List::create(Named("X") = X,
                       Named("Y") = Y,
@@ -456,4 +429,203 @@ List BVAR_cniw_est(List setup, int keep, bool verbose = false, int n_chains = 1)
   
   
   return setup;
+}
+
+//[[Rcpp::export(.bvar_fcst)]]
+List BVAR_cniw_forecast(List model, arma::mat series, Rcpp::Nullable<arma::mat> Z_f = R_NilValue,
+                        int h = 1, bool out_of_sample = true, 
+                        std::string type = "prediction", 
+                        Rcpp::Nullable<List> level_ = R_NilValue,
+                        Rcpp::Nullable<StringVector> include_ = R_NilValue,
+                        bool fast_forecast = false, bool verbose = false) {
+  
+  // import data from model
+  // assume that series data is ALWAYS present - no need to restore it
+  StringVector include;
+  if (include_.isNotNull()) {
+    include = include_.get();
+  } else {
+    include = {"mean", "median", "sd", "interval", "raw"};
+  }
+  
+  NumericVector level;
+  if (level_.isNotNull()) {
+    level = level_.get();
+  } else {
+    level = {80, 95};
+  }
+  
+  bool constant = model["Constant"];
+  arma::mat Y = as<mat>(model["Y"]);
+  arma::mat X = as<mat>(model["X"]);
+  arma::mat X_plus = as<mat>(model["X_plus"]);
+  
+  int nT = Y.n_rows, p = model["p"], 
+      k = X.n_cols, m = Y.n_cols; 
+  
+  // check for errors in data
+  arma::mat Zf;
+  if (Z_f.isNotNull()){
+    Zf = as<mat>(Z_f);
+    if (Zf.n_rows != h) {
+      Rcpp::stop("ERROR: Number of rows in Z_f must be equal to h");
+    }
+  }
+  // add constant to exo variables
+  if (constant) {
+    arma::vec intcpt(h) ;
+    intcpt.fill(1) ;
+    Zf = join_rows(Zf, intcpt);
+  }
+  
+  if (series.n_rows < p) {
+    Rcpp::stop("ERROR: insufficient observations in provided series");
+  }
+  
+  // set initial number of iterations
+  int keep = 0;
+  
+  // take the needed initial number of observations for forecasting
+  if (out_of_sample) { // last p ones for out of sample
+    series = series.rows(series.n_rows - 1 - p, series.n_rows - 1);
+  } else { // first p ones for in-sample
+    series = series.rows(0, p);
+    h = nT;
+  }
+  
+  // if sample is available, set keep to n_rows
+  arma::mat fullsamp;
+  if (model.containsElementNamed("sample")){
+    List samples = model["sample"];
+    fullsamp = as<mat>(samples[0]);
+    for (int i = 1 ; i < samples.length() ; ++i) {
+      fullsamp = join_cols(fullsamp, as<mat>(samples[i]));
+    }
+    keep = fullsamp.n_rows;
+  }
+  
+  // if no sample and fast_forcast is not desired, force fast forecast
+  if ( (keep == 0) && (!fast_forecast)) {
+    Rcout << "The model contains no simulations. Forecast is set to fast_forecast = TRUE" << endl;
+    fast_forecast = true;
+  }
+
+  // settings for fast forecast
+  if (fast_forecast) {
+    include = "mean";
+    keep = 1;
+    
+    type = "credible"; // to avoid epsilon simulation
+  }
+  
+  // initialise matrix for forecasted values
+  arma::mat forecast_raw = zeros<mat>(keep, m * h);
+  arma::vec e_t = zeros<vec>(m), x_t = zeros<vec>(k), y_hat_temp, y_hat;
+  arma::mat Phi(k, m), Sigma(m, m), tPhi, R, Y_init;
+  int nobs = series.n_rows;
+  
+  if (verbose) {
+    Rcout << "Forecasting... " << endl;
+  }
+
+  // note: fast forecast will go only once, as keep = 1
+  // normal forecast will go n_rows times
+  for (int i = 0 ; i < keep ; ++i) {
+    // forecast h steps for given sample of Phi
+    
+    if (verbose && (i % 1000 == 0) ) {
+        Rcout << "Iteration " << i + 1 << " out of " << keep << endl;
+      }
+    
+    if (fast_forecast) {
+      // use posterior exp value of Phi provided by the model
+      Phi = as<mat>(model["Phi_post"]); 
+    } else {
+      // now we use the mcmc sample
+      Phi = reshape((fullsamp.row(i)).cols(0, k * m - 1), k, m);
+      Sigma = reshape((fullsamp.row(i)).cols(k * m, m * k + m * m - 1), m, m);
+      
+      vec eigval;
+      mat eigvec;
+      
+      eig_sym(eigval, eigvec, Sigma);
+      
+      for (int val = 0 ; val < eigval.n_elem ; ++val) {
+        if (eigval[val] <= -sqrt(std::numeric_limits<double>::epsilon() * std::abs(eigval[val]))) {
+          Rcpp::warning("Omega_post is not positive definite numerically");
+        }
+      }
+      
+      R = (eigvec * (eigvec.each_col() % sqrt(eigval))).t();
+    
+    }
+      
+    tPhi = Phi.t();
+     
+    for (int j = 0 ; j < h ; ++j) {
+      if (out_of_sample) {
+        // get x_t for out-of-sample forecasts
+          if (j >= 1) {
+            Y_init = join_cols(y_hat_temp.t(), Y_init.rows(0, p - 2));
+          } else {
+            Y_init = series.rows(nobs - p, nobs - 1);
+            Y_init = reverse(Y_init, 0);
+          }
+          
+          x_t = join_cols(vectorise(Y_init.t()), Zf.row(j));
+        } else {
+          // get x_t for in-sample forecasts
+
+          x_t = X.row(j).t();
+
+        }
+        
+
+        if (type == "prediction") {
+            e_t = R * randn<vec>(m);
+        }
+        
+        y_hat_temp = tPhi * x_t + e_t;
+        y_hat = join_cols(y_hat, y_hat_temp);
+
+    }
+    
+    //Rcout << "forecast_raw" << endl << forecast_raw << endl;
+    forecast_raw.row(i) = y_hat.t();
+    y_hat.reset();
+    
+  }
+  
+  arma::vec avg, med, stdev;
+  arma::mat qnt;
+  
+  // get means
+  if (std::find(include.begin(), include.end(), "mean") != include.end()) {
+    avg = vectorise(mean(forecast_raw, 0));
+  }
+  
+  // get median
+  if (std::find(include.begin(), include.end(), "median") != include.end()) {
+    med = vectorise(median(forecast_raw, 0));
+  }
+  
+  // get stdev
+  if (std::find(include.begin(), include.end(), "sd") != include.end()) {
+    stdev = vectorise(stddev(forecast_raw, 0));
+  }
+  
+  // get quantiles
+  if (std::find(include.begin(), include.end(), "interval") != include.end()) {
+    qnt = CalcQuantiles(forecast_raw, level);
+  }
+    
+  if (verbose) {
+    Rcout << "Done!" << endl;
+  }
+  
+  return List::create(Named("raw") = forecast_raw,
+                      Named("mean") = avg,
+                      Named("median") = med,
+                      Named("sd") = stdev,
+                      Named("quantiles") = qnt);
 }
