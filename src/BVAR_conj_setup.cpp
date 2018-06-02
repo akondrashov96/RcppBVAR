@@ -431,7 +431,7 @@ List BVAR_cniw_est(List setup, int keep, bool verbose = false, int n_chains = 1)
   return setup;
 }
 
-//[[Rcpp::export(.bvar_fcst)]]
+//[[Rcpp::export(bvar_fcst)]]
 List BVAR_cniw_forecast(List model, arma::mat series, Rcpp::Nullable<arma::mat> Z_f = R_NilValue,
                         int h = 1, bool out_of_sample = true, 
                         std::string type = "prediction", 
