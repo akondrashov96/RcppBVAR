@@ -41,7 +41,7 @@ BVAR_cniw_est <- function(setup, keep, verbose = FALSE, n_chains = 1L) {
     .Call(`_RcppBVAR_BVAR_cniw_est`, setup, keep, verbose, n_chains)
 }
 
-.bvar_fcst <- function(model, series, Z_f = NULL, h = 1L, out_of_sample = TRUE, type = "prediction", level_ = NULL, include_ = NULL, fast_forecast = FALSE, verbose = FALSE) {
+bvar_fcst <- function(model, series, Z_f = NULL, h = 1L, out_of_sample = TRUE, type = "prediction", level_ = NULL, include_ = NULL, fast_forecast = FALSE, verbose = FALSE) {
     .Call(`_RcppBVAR_BVAR_cniw_forecast`, model, series, Z_f, h, out_of_sample, type, level_, include_, fast_forecast, verbose)
 }
 
