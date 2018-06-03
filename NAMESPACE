@@ -1,6 +1,3 @@
-export("BVAR_conj_forecast",
-       "BVAR_cniw_est",
-       "BVAR_cniw_setup")
 useDynLib(RcppBVAR, .registration=TRUE)
 importFrom(Rcpp, evalCpp)
 exportPattern("^[[:alpha:]]+")
