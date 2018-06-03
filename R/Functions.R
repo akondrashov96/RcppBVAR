@@ -58,6 +58,11 @@ BVAR_conj_forecast <- function(model, src_series, Z_f = NULL, h = 1, out_of_samp
   
   type <- match.arg(type)
   eqNames <- colnames(src_series)
+  
+  if (verbose) {
+    print("Passing to C++...")
+  }
+  
   result <- bvar_fcst(model = model, series = src_series, Z_f = Z_f, 
                        h = h, out_of_sample = out_of_sample, type = type, 
                        level_ = level, include_ = include, 
