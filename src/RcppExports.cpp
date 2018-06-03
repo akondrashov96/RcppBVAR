@@ -6,6 +6,18 @@
 
 using namespace Rcpp;
 
+// CalcQuantiles
+arma::mat CalcQuantiles(const arma::mat& X, const arma::vec& q);
+RcppExport SEXP _RcppBVAR_CalcQuantiles(SEXP XSEXP, SEXP qSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type q(qSEXP);
+    rcpp_result_gen = Rcpp::wrap(CalcQuantiles(X, q));
+    return rcpp_result_gen;
+END_RCPP
+}
 // prepData
 List prepData(arma::mat series, int p, bool include_const);
 RcppExport SEXP _RcppBVAR_prepData(SEXP seriesSEXP, SEXP pSEXP, SEXP include_constSEXP) {
@@ -141,6 +153,26 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// BVAR_cniw_forecast
+List BVAR_cniw_forecast(List model, arma::mat series, Rcpp::Nullable<arma::mat> Z_f, int h, bool out_of_sample, std::string type, Rcpp::Nullable<List> level_, Rcpp::Nullable<StringVector> include_, bool fast_forecast, bool verbose);
+RcppExport SEXP _RcppBVAR_BVAR_cniw_forecast(SEXP modelSEXP, SEXP seriesSEXP, SEXP Z_fSEXP, SEXP hSEXP, SEXP out_of_sampleSEXP, SEXP typeSEXP, SEXP level_SEXP, SEXP include_SEXP, SEXP fast_forecastSEXP, SEXP verboseSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< List >::type model(modelSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type series(seriesSEXP);
+    Rcpp::traits::input_parameter< Rcpp::Nullable<arma::mat> >::type Z_f(Z_fSEXP);
+    Rcpp::traits::input_parameter< int >::type h(hSEXP);
+    Rcpp::traits::input_parameter< bool >::type out_of_sample(out_of_sampleSEXP);
+    Rcpp::traits::input_parameter< std::string >::type type(typeSEXP);
+    Rcpp::traits::input_parameter< Rcpp::Nullable<List> >::type level_(level_SEXP);
+    Rcpp::traits::input_parameter< Rcpp::Nullable<StringVector> >::type include_(include_SEXP);
+    Rcpp::traits::input_parameter< bool >::type fast_forecast(fast_forecastSEXP);
+    Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
+    rcpp_result_gen = Rcpp::wrap(BVAR_cniw_forecast(model, series, Z_f, h, out_of_sample, type, level_, include_, fast_forecast, verbose));
+    return rcpp_result_gen;
+END_RCPP
+}
 // BVAR
 List BVAR(arma::mat series, int p, arma::mat C, arma::mat V0, arma::mat Phi0, int df, bool include_mean);
 RcppExport SEXP _RcppBVAR_BVAR(SEXP seriesSEXP, SEXP pSEXP, SEXP CSEXP, SEXP V0SEXP, SEXP Phi0SEXP, SEXP dfSEXP, SEXP include_meanSEXP) {
@@ -185,6 +217,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_RcppBVAR_CalcQuantiles", (DL_FUNC) &_RcppBVAR_CalcQuantiles, 2},
     {"_RcppBVAR_prepData", (DL_FUNC) &_RcppBVAR_prepData, 3},
     {"_RcppBVAR_ARp", (DL_FUNC) &_RcppBVAR_ARp, 2},
     {"_RcppBVAR_conj_delta", (DL_FUNC) &_RcppBVAR_conj_delta, 3},
@@ -194,6 +227,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_RcppBVAR_conj_simulate", (DL_FUNC) &_RcppBVAR_conj_simulate, 7},
     {"_RcppBVAR_BVAR_cniw_setup", (DL_FUNC) &_RcppBVAR_BVAR_cniw_setup, 11},
     {"_RcppBVAR_BVAR_cniw_est", (DL_FUNC) &_RcppBVAR_BVAR_cniw_est, 4},
+    {"_RcppBVAR_BVAR_cniw_forecast", (DL_FUNC) &_RcppBVAR_BVAR_cniw_forecast, 10},
     {"_RcppBVAR_BVAR", (DL_FUNC) &_RcppBVAR_BVAR, 7},
     {"_RcppBVAR_Forecast", (DL_FUNC) &_RcppBVAR_Forecast, 2},
     {"_RcppBVAR_freqVAR", (DL_FUNC) &_RcppBVAR_freqVAR, 3},

@@ -8,6 +8,6 @@ Maintainer: Artem Kondrashov <akondrashov96@gmail.com>
 Description: BVAR estimation in R. Functions are mainly written in C++ for speed.
 License: GPL-3
 LazyData: true
-RoxygenNote: 5.0.1
+RoxygenNote: 6.0.1
 Imports: Rcpp (>= 0.12.16)
 LinkingTo: Rcpp, RcppArmadillo
