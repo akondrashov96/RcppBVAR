@@ -10,7 +10,7 @@ BVAR_conj_forecast(model, src_series, Z_f = NULL, h = 1,
   fast_forecast = FALSE, verbose = FALSE)
 }
 \arguments{
-\item{model}{A model estimated by BVAR_cniw_est() function.}
+\item{model}{A model estimated by \code{BVAR_cniw_est()} function.}
 
 \item{src_series}{The source series used in estimation and forecasting. 
 Required for forecasting.}
@@ -21,8 +21,8 @@ Required for forecasting.}
 
 \item{out_of_sample}{Whether the forecast is done in-sample or out-of-sample. Default is \code{TRUE}.}
 
-\item{type}{If set to \preformatted{"prediction"} (default value), then uncertainty 
-about future shocks is incorporated (by adding random errors). If set to \preformatted{"credible"}, 
+\item{type}{If set to \code{"prediction"} (default value), then uncertainty 
+about future shocks is incorporated (by adding random errors). If set to \code{"credible"}, 
 only parameter uncertainty is considered.}
 
 \item{level}{Confidence levels for prediction intervals. Can be given as a vector.}
@@ -37,15 +37,15 @@ only posterior Phi matrix is used.}
 \item{verbose}{Default is \code{FALSE}. If set to \code{TRUE} internal messages will be displayed.}
 }
 \value{
-A list containing: a dataframe with summary, raw forecasts sample (if raw is in \code{include}).
+A list containing: a dataframe with summary, raw forecasts sample (if \code{raw} is in \code{include}).
 }
 \description{
-Forecasts with CNIW BVAR. The function takes BVAR_cniw_est() result as model.
+Forecasts with CNIW BVAR. The function takes \code{BVAR_cniw_est()} result as model.
 }
 \details{
 The functions uses MCMC approach for prediction and generates a large sample 
 (depends on size of Phi draws in the estimated model). Mean, median, standard seviation and 
-quantiles are supplied automatically. The computations are done in C++ (hidden .bvar_fcst() function).
+quantiles are supplied automatically. The computations are done in C++ (\code{bvar_fcst()} function).
 The R function acts as a shell providing inputs and making a list of output dataframe and raw 
 forecast table, if requested by the user.
 }

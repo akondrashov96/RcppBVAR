@@ -33,11 +33,11 @@ conj_simulate <- function(v_post, Omega_root_post, S_post, Phi_post, verbose = F
     .Call(`_RcppBVAR_conj_simulate`, v_post, Omega_root_post, S_post, Phi_post, verbose, keep, chains)
 }
 
-BVAR_cniw_setup <- function(series, lam, p, delt, v_prior, s2_lag = 1L, Z = NULL, y_bar_type = "initial", include_const = TRUE, delttypeAR1 = FALSE, carriero_hack = FALSE) {
+bvar_setup <- function(series, lam, p, delt, v_prior, s2_lag = 1L, Z = NULL, y_bar_type = "initial", include_const = TRUE, delttypeAR1 = FALSE, carriero_hack = FALSE) {
     .Call(`_RcppBVAR_BVAR_cniw_setup`, series, lam, p, delt, v_prior, s2_lag, Z, y_bar_type, include_const, delttypeAR1, carriero_hack)
 }
 
-BVAR_cniw_est <- function(setup, keep, verbose = FALSE, n_chains = 1L) {
+bvar_est <- function(setup, keep, verbose = FALSE, n_chains = 1L) {
     .Call(`_RcppBVAR_BVAR_cniw_est`, setup, keep, verbose, n_chains)
 }
 

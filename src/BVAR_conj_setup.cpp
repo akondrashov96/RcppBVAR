@@ -192,14 +192,14 @@ List conj_lam2dum(arma::mat series, arma::vec lam, int p, arma::vec delt,
   } else if (y_bar_type != "initial") {
     Rcout << "y_bar_type not recognised. Set to  'initial' ";
   }
-  
+   
   arma::vec y_bar = vectorise(mean(series.rows(0, sc_io_numrows - 1), 0));
   
   arma::vec z_bar;
   if (!exo.is_empty()) {
-    z_bar = mean(exo.rows(0, sc_io_numrows), 0);
+    z_bar = vectorise(mean(exo.rows(0, sc_io_numrows - 1), 0));
   }
-  
+
   // SC prior setting
   arma::mat Y_sc, X_sc;
   
@@ -364,7 +364,7 @@ List conj_simulate(int v_post, arma::mat Omega_root_post, arma::mat S_post, arma
   return sims;
 }
 
-//[[Rcpp::export()]]
+//[[Rcpp::export(bvar_setup)]]
 List BVAR_cniw_setup (arma::mat series, arma::vec lam, int p, arma::vec delt, int v_prior, 
                       int s2_lag = 1,
                       Rcpp::Nullable<arma::mat> Z = R_NilValue, std::string y_bar_type = "initial",
@@ -379,6 +379,7 @@ List BVAR_cniw_setup (arma::mat series, arma::vec lam, int p, arma::vec delt, in
   List dum = conj_lam2dum(series, lam, p, delt, s2_lag, Z, 
                           y_bar_type, include_const, delttypeAR1, carriero_hack);
   
+  // pretty much uneeded, but I'll leave it just in case
   if (v_prior < 0) {
     v_prior = m + 2;
   }
@@ -393,7 +394,7 @@ List BVAR_cniw_setup (arma::mat series, arma::vec lam, int p, arma::vec delt, in
   
 }
 
-//[[Rcpp::export()]]
+//[[Rcpp::export(bvar_est)]]
 List BVAR_cniw_est(List setup, int keep, bool verbose = false, int n_chains = 1) {
   
   arma::mat X = setup["X"];
