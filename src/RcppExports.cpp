@@ -90,14 +90,15 @@ BEGIN_RCPP
 END_RCPP
 }
 // conj_dum2hyp
-List conj_dum2hyp(arma::mat Y_star, arma::mat X_star);
-RcppExport SEXP _RcppBVAR_conj_dum2hyp(SEXP Y_starSEXP, SEXP X_starSEXP) {
+List conj_dum2hyp(arma::mat Y_star, arma::mat X_star, bool verbose);
+RcppExport SEXP _RcppBVAR_conj_dum2hyp(SEXP Y_starSEXP, SEXP X_starSEXP, SEXP verboseSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< arma::mat >::type Y_star(Y_starSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type X_star(X_starSEXP);
-    rcpp_result_gen = Rcpp::wrap(conj_dum2hyp(Y_star, X_star));
+    Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
+    rcpp_result_gen = Rcpp::wrap(conj_dum2hyp(Y_star, X_star, verbose));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -215,6 +216,19 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// genVAR
+List genVAR(int nT, int p, int k);
+RcppExport SEXP _RcppBVAR_genVAR(SEXP nTSEXP, SEXP pSEXP, SEXP kSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type nT(nTSEXP);
+    Rcpp::traits::input_parameter< int >::type p(pSEXP);
+    Rcpp::traits::input_parameter< int >::type k(kSEXP);
+    rcpp_result_gen = Rcpp::wrap(genVAR(nT, p, k));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_RcppBVAR_CalcQuantiles", (DL_FUNC) &_RcppBVAR_CalcQuantiles, 2},
@@ -223,7 +237,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_RcppBVAR_conj_delta", (DL_FUNC) &_RcppBVAR_conj_delta, 3},
     {"_RcppBVAR_conj_sigma", (DL_FUNC) &_RcppBVAR_conj_sigma, 3},
     {"_RcppBVAR_conj_lam2dum", (DL_FUNC) &_RcppBVAR_conj_lam2dum, 10},
-    {"_RcppBVAR_conj_dum2hyp", (DL_FUNC) &_RcppBVAR_conj_dum2hyp, 2},
+    {"_RcppBVAR_conj_dum2hyp", (DL_FUNC) &_RcppBVAR_conj_dum2hyp, 3},
     {"_RcppBVAR_conj_simulate", (DL_FUNC) &_RcppBVAR_conj_simulate, 7},
     {"_RcppBVAR_BVAR_cniw_setup", (DL_FUNC) &_RcppBVAR_BVAR_cniw_setup, 11},
     {"_RcppBVAR_BVAR_cniw_est", (DL_FUNC) &_RcppBVAR_BVAR_cniw_est, 4},
@@ -231,6 +245,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_RcppBVAR_BVAR", (DL_FUNC) &_RcppBVAR_BVAR, 7},
     {"_RcppBVAR_Forecast", (DL_FUNC) &_RcppBVAR_Forecast, 2},
     {"_RcppBVAR_freqVAR", (DL_FUNC) &_RcppBVAR_freqVAR, 3},
+    {"_RcppBVAR_genVAR", (DL_FUNC) &_RcppBVAR_genVAR, 3},
     {NULL, NULL, 0}
 };
 

@@ -25,8 +25,8 @@ conj_lam2dum <- function(series, lam, p, delt, s2_lag = 1L, Z = NULL, y_bar_type
     .Call(`_RcppBVAR_conj_lam2dum`, series, lam, p, delt, s2_lag, Z, y_bar_type, include_const, delttypeAR1, carriero_hack)
 }
 
-conj_dum2hyp <- function(Y_star, X_star) {
-    .Call(`_RcppBVAR_conj_dum2hyp`, Y_star, X_star)
+conj_dum2hyp <- function(Y_star, X_star, verbose = FALSE) {
+    .Call(`_RcppBVAR_conj_dum2hyp`, Y_star, X_star, verbose)
 }
 
 conj_simulate <- function(v_post, Omega_root_post, S_post, Phi_post, verbose = FALSE, keep = 10L, chains = 1L) {
@@ -55,5 +55,9 @@ Forecast <- function(model, h) {
 
 freqVAR <- function(series, p, include_mean = TRUE) {
     .Call(`_RcppBVAR_freqVAR`, series, p, include_mean)
+}
+
+genVAR <- function(nT, p, k) {
+    .Call(`_RcppBVAR_genVAR`, nT, p, k)
 }
 
