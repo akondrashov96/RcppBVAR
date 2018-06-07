@@ -178,6 +178,21 @@ BVAR_conj_setup <- function(series, lambda = c(0.2, 1, 1, 1, 100, 100), p = 1, d
                        include_const = include_const, 
                        delttypeAR1 = delttypeAR1, carriero_hack = carriero_hack)
   
+  eqNames <- colnames(series)
+  
+  colnames(output$Y) <- eqNames
+  colnames(output$Y_plus) <- eqNames
+  nameVec <- paste(eqNames, ", p = ", 
+                     rep(1:p, each = length(eqNames)), 
+                     sep = "")
+  
+  if (include_const) {
+    nameVec <- c(nameVec, "const")
+  }
+  
+  colnames(output$X) <- nameVec
+  colnames(output$X_plus) <- nameVec
+  
   return(output)
 }
 
@@ -209,6 +224,41 @@ BVAR_conj_setup <- function(series, lambda = c(0.2, 1, 1, 1, 100, 100), p = 1, d
 BVAR_conj_estimate <- function(mod_setup, keep = 2000, n_chains = 1, verbose = FALSE) {
   
   output <- bvar_est(setup = mod_setup, keep = keep, n_chains = n_chains, verbose = verbose)
+  
+  eqNames <- colnames(mod_setup$Y)
+  p <- mod_setup$p
+  
+  colnames(output$Y) <- eqNames
+  colnames(output$Y_plus) <- eqNames
+  
+  nameVec <- paste(eqNames, ", p = ", 
+                     rep(1:p, each = length(eqNames)), 
+                     sep = "")
+  
+  if (mod_setup$Constant) {
+    nameVec <- c(nameVec, "const")
+  }
+  
+  colnames(output$X) <- nameVec
+  colnames(output$X_plus) <- nameVec
+  
+  colnames(output$Phi_post) <- paste("eq.", eqNames, sep = "")
+  rownames(output$Phi_post) <- nameVec
+  
+  colnames(output$Omega_post) <- nameVec
+  rownames(output$Omega_post) <- nameVec
+  
+  colnames(output$S_post) <- eqNames
+  rownames(output$S_post) <- eqNames
+  
+  Phinames <- paste("eq.", sep = "", rep(eqNames, each = ncol(output$X)), " ", 
+                    rep(x = nameVec, length(eqNames)))
+  Snames <- paste("eq.", sep = "", rep(eqNames, each = length(eqNames)), " ", 
+                  rep(eqNames, length(eqNames)))
+  
+  for (i in 1:length(output$sample)){
+    colnames(output$sample[[i]]) <- c(Phinames, Snames)
+  }
   
   return(output)
 }

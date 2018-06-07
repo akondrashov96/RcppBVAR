@@ -389,7 +389,9 @@ List conj_simulate(int v_post, arma::mat Omega_root_post, arma::mat S_post, arma
     answer = zeros<mat>(keep, m * k + m * m);
   }
 
-  Rcout << "Done!" << endl;
+  if (verbose) {
+    Rcout << "Done!" << endl;
+  }
   return sims;
 }
 
@@ -408,7 +410,7 @@ List BVAR_cniw_setup (arma::mat series, arma::vec lam, int p, arma::vec delt, in
   List dum = conj_lam2dum(series, lam, p, delt, s2_lag, Z, 
                           y_bar_type, include_const, delttypeAR1, carriero_hack);
   
-  // pretty much uneeded, but I'll leave it just in case
+  // pretty much unneeded, but I'll leave it just in case
   if (v_prior < 0) {
     v_prior = m + 2;
   }
