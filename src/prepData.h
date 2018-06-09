@@ -6,6 +6,6 @@
 using namespace Rcpp;
 using namespace arma;
 
-List prepData(arma::mat series, int p, bool include_const = true);
+List prepData(arma::mat series, int p, bool include_const);
   
 #endif
