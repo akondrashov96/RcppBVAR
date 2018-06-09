@@ -217,8 +217,6 @@ BEGIN_RCPP
 END_RCPP
 }
 
-RcppExport SEXP _RcppBVAR_prepData(SEXP, SEXP, SEXP);
-
 static const R_CallMethodDef CallEntries[] = {
     {"_RcppBVAR_CalcQuantiles", (DL_FUNC) &_RcppBVAR_CalcQuantiles, 2},
     {"_RcppBVAR_ARp", (DL_FUNC) &_RcppBVAR_ARp, 2},
@@ -234,7 +232,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_RcppBVAR_Forecast", (DL_FUNC) &_RcppBVAR_Forecast, 2},
     {"_RcppBVAR_freqVAR", (DL_FUNC) &_RcppBVAR_freqVAR, 3},
     {"_RcppBVAR_genVAR", (DL_FUNC) &_RcppBVAR_genVAR, 3},
-    {"_RcppBVAR_prepData",           (DL_FUNC) &_RcppBVAR_prepData,            3},
     {NULL, NULL, 0}
 };
 
