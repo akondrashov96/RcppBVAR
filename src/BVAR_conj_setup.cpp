@@ -1,7 +1,7 @@
 #include <RcppArmadillo.h>
 //[[Rcpp::plugins(cpp11)]]
 //[[Rcpp::depends(RcppArmadillo)]]
-#include "prepData.h"
+#include "include/prepData.h"
 
 using namespace Rcpp;
 using namespace arma;
