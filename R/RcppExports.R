@@ -5,10 +5,6 @@ CalcQuantiles <- function(X, q) {
     .Call(`_RcppBVAR_CalcQuantiles`, X, q)
 }
 
-prepData <- function(series, p, include_const = TRUE) {
-    .Call(`_RcppBVAR_prepData`, series, p, include_const)
-}
-
 ARp <- function(series, p = 1L) {
     .Call(`_RcppBVAR_ARp`, series, p)
 }

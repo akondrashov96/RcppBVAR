@@ -18,19 +18,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// prepData
-List prepData(arma::mat series, int p, bool include_const);
-RcppExport SEXP _RcppBVAR_prepData(SEXP seriesSEXP, SEXP pSEXP, SEXP include_constSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat >::type series(seriesSEXP);
-    Rcpp::traits::input_parameter< int >::type p(pSEXP);
-    Rcpp::traits::input_parameter< bool >::type include_const(include_constSEXP);
-    rcpp_result_gen = Rcpp::wrap(prepData(series, p, include_const));
-    return rcpp_result_gen;
-END_RCPP
-}
 // ARp
 List ARp(arma::vec series, int p);
 RcppExport SEXP _RcppBVAR_ARp(SEXP seriesSEXP, SEXP pSEXP) {
@@ -230,9 +217,10 @@ BEGIN_RCPP
 END_RCPP
 }
 
+RcppExport SEXP _RcppBVAR_prepData(SEXP, SEXP, SEXP);
+
 static const R_CallMethodDef CallEntries[] = {
     {"_RcppBVAR_CalcQuantiles", (DL_FUNC) &_RcppBVAR_CalcQuantiles, 2},
-    {"_RcppBVAR_prepData", (DL_FUNC) &_RcppBVAR_prepData, 3},
     {"_RcppBVAR_ARp", (DL_FUNC) &_RcppBVAR_ARp, 2},
     {"_RcppBVAR_conj_delta", (DL_FUNC) &_RcppBVAR_conj_delta, 3},
     {"_RcppBVAR_conj_sigma", (DL_FUNC) &_RcppBVAR_conj_sigma, 3},
@@ -246,6 +234,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_RcppBVAR_Forecast", (DL_FUNC) &_RcppBVAR_Forecast, 2},
     {"_RcppBVAR_freqVAR", (DL_FUNC) &_RcppBVAR_freqVAR, 3},
     {"_RcppBVAR_genVAR", (DL_FUNC) &_RcppBVAR_genVAR, 3},
+    {"_RcppBVAR_prepData",           (DL_FUNC) &_RcppBVAR_prepData,            3},
     {NULL, NULL, 0}
 };
 
