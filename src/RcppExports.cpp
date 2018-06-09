@@ -6,6 +6,51 @@
 
 using namespace Rcpp;
 
+// RPmat
+arma::mat RPmat(int m_l, int K);
+RcppExport SEXP _RcppBVAR_RPmat(SEXP m_lSEXP, SEXP KSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type m_l(m_lSEXP);
+    Rcpp::traits::input_parameter< int >::type K(KSEXP);
+    rcpp_result_gen = Rcpp::wrap(RPmat(m_l, K));
+    return rcpp_result_gen;
+END_RCPP
+}
+// BCVAR_conj_setup
+List BCVAR_conj_setup(arma::mat series, int p, int v_prior, arma::mat Omega, arma::mat S, arma::mat Phi, bool include_const);
+RcppExport SEXP _RcppBVAR_BCVAR_conj_setup(SEXP seriesSEXP, SEXP pSEXP, SEXP v_priorSEXP, SEXP OmegaSEXP, SEXP SSEXP, SEXP PhiSEXP, SEXP include_constSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type series(seriesSEXP);
+    Rcpp::traits::input_parameter< int >::type p(pSEXP);
+    Rcpp::traits::input_parameter< int >::type v_prior(v_priorSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type Omega(OmegaSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type S(SSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type Phi(PhiSEXP);
+    Rcpp::traits::input_parameter< bool >::type include_const(include_constSEXP);
+    rcpp_result_gen = Rcpp::wrap(BCVAR_conj_setup(series, p, v_prior, Omega, S, Phi, include_const));
+    return rcpp_result_gen;
+END_RCPP
+}
+// BCVAR_conj_est
+List BCVAR_conj_est(List setup, int keep, std::string type, bool verbose, int n_chains, int n_phi);
+RcppExport SEXP _RcppBVAR_BCVAR_conj_est(SEXP setupSEXP, SEXP keepSEXP, SEXP typeSEXP, SEXP verboseSEXP, SEXP n_chainsSEXP, SEXP n_phiSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< List >::type setup(setupSEXP);
+    Rcpp::traits::input_parameter< int >::type keep(keepSEXP);
+    Rcpp::traits::input_parameter< std::string >::type type(typeSEXP);
+    Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
+    Rcpp::traits::input_parameter< int >::type n_chains(n_chainsSEXP);
+    Rcpp::traits::input_parameter< int >::type n_phi(n_phiSEXP);
+    rcpp_result_gen = Rcpp::wrap(BCVAR_conj_est(setup, keep, type, verbose, n_chains, n_phi));
+    return rcpp_result_gen;
+END_RCPP
+}
 // CalcQuantiles
 arma::mat CalcQuantiles(const arma::mat& X, const arma::vec& q);
 RcppExport SEXP _RcppBVAR_CalcQuantiles(SEXP XSEXP, SEXP qSEXP) {
@@ -218,6 +263,9 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_RcppBVAR_RPmat", (DL_FUNC) &_RcppBVAR_RPmat, 2},
+    {"_RcppBVAR_BCVAR_conj_setup", (DL_FUNC) &_RcppBVAR_BCVAR_conj_setup, 7},
+    {"_RcppBVAR_BCVAR_conj_est", (DL_FUNC) &_RcppBVAR_BCVAR_conj_est, 6},
     {"_RcppBVAR_CalcQuantiles", (DL_FUNC) &_RcppBVAR_CalcQuantiles, 2},
     {"_RcppBVAR_ARp", (DL_FUNC) &_RcppBVAR_ARp, 2},
     {"_RcppBVAR_conj_delta", (DL_FUNC) &_RcppBVAR_conj_delta, 3},
