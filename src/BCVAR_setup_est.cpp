@@ -6,23 +6,6 @@
 using namespace Rcpp;
 using namespace arma;
 
-arma::mat GS(arma::mat X) {
-  
-  int m = X.n_rows;
-  arma::mat Q = X * 0;
-  arma::vec v;
-  
-  for (int i = 0 ; i < m ; ++i) {
-    v = vectorise(X.row(i));
-    for (int j = 0 ; j < i ; ++j) {
-      v = v - vectorise(Q.row(j) * X.row(i).t() * Q.row(j));
-    }
-    Q.row(i) = (v/norm(v, "fro")).t();
-  }
-  
-  return Q;
-}
-
 List makeData(arma::mat series, int p, bool include_const = true) {
   
   int k = series.n_cols, n = series.n_rows;
@@ -49,6 +32,13 @@ List makeData(arma::mat series, int p, bool include_const = true) {
                       Named("p") = p);
 }
 
+arma::mat normmat(arma::mat X){
+  arma::mat Y = pow(X, 2);
+  arma::vec n = sqrt(sum(Y, 0).t()) + std::numeric_limits<double>::epsilon();
+  Y = X.each_row() / n.t();
+  return Y;
+}
+
 //[[Rcpp::export()]]
 arma::mat RPmat(int m_l, int K) {
   
@@ -70,7 +60,9 @@ arma::mat RPmat(int m_l, int K) {
   Phi.elem(find(Phi >= cprob[0] && Phi < cprob[1])).fill(val[1]);
   Phi.elem(find(Phi >= cprob[1])).fill(val[2]);
   
-  Phi = GS(Phi);
+  if (m_l > 1) {
+    Phi = normmat(Phi);
+  }
   
   return Phi;
 }
@@ -116,29 +108,13 @@ List BCVAR_dum2hyp(arma::mat Y_star, arma::mat X_star, arma::mat Cmat, bool verb
   arma::mat diag_inv = zeros<mat>(s.n_elem, s.n_elem);
   diag_inv.diag() = 1/s;
   
-  if (verbose) {
-    Rcout << "Calculating Omega..." << endl;
-  }
-  
   arma::mat Omega_root = V * diag_inv * V.t();
   arma::mat Omega = Omega_root * Omega_root;
-  
-  if (verbose) {
-    Rcout << "Calculating Phi..." << endl;
-  }
   
   arma::mat CPhi_star = Omega * (CX_star.t() * Y_star);
   arma::mat E_star = Y_star - CX_star * CPhi_star;
   
-  if (verbose) {
-    Rcout << "Calculating S..." << endl;
-  }
-  
   arma::mat S = E_star.t() * E_star;
-  
-  if (verbose) {
-    Rcout << "Done!" << endl;
-  }
   
   arma::mat Phi_star_U = Cmat.t() * CPhi_star;
   arma::mat Omegart_U = Cmat.t() * Omega_root * Cmat;
@@ -282,12 +258,18 @@ List BCVAR_conj_est(List setup, int keep, std::string type, bool verbose = false
              Omegart_cube(K, K, m_max * n_phi),
              Omega_cube(K, K, m_max * n_phi);
   
-  Rcout << "pass1" << endl;
   for (int m_l = m_min ; m_l < m_max + 1 ; ++m_l) {
+    if (verbose) {
+      Rcout << "Model: m_l = " << m_l << ", phi = ";
+    }
     for (int j = 0 ; j < n_phi ; ++j) {
+      
+      if (verbose) {
+        Rcout <<  j + 1 << ' ';
+      }
+      
       Cmat = RPmat(m_l, K);
-
-      //Rcout << "Model: m_l = " << m_l << " , phi = " << j + 1 << endl;
+      
       post_hyp = BCVAR_dum2hyp(Y_star, X_star, Cmat, verbose);
       
       BIC[Model_N] = log(det(as<mat>(post_hyp["S"]) / nT)) + 
@@ -300,27 +282,32 @@ List BCVAR_conj_est(List setup, int keep, std::string type, bool verbose = false
       
       Model_N++;
     }
+    if (verbose) {
+      Rcout <<  endl;
+    }
   }
   
-  Rcout << "pass2" << endl;
+  if (verbose) {
+    Rcout << "Done!" << endl;
+  }
+  
   arma::vec PSI = BIC - min(BIC);
   arma::vec Post_weights = exp(-0.5*PSI) / sum(exp(-0.5*PSI));
+  
+  setup["Weights"] = Post_weights;
+  setup["BIC"] = BIC;
   
   arma::mat Phi_post = zeros<mat>(K, M);
   arma::mat S_post = zeros<mat>(M, M);
   arma::mat Omegart_post = zeros<mat>(K, K);
   arma::mat Omega_post = zeros<mat>(K, K);
   
-  Rcout << "pass3" << endl;
-  
   if (type == "all") {
     for (int i = 0 ; i < Post_weights.n_elem ; ++i) {
       Phi_post = Phi_post + Phi_cube.slice(i) * Post_weights(i);
       S_post = S_post + S_cube.slice(i) * Post_weights(i);
       Omegart_post = Omegart_post + Omegart_cube.slice(i) * Post_weights(i);
-      Rcout << "Omegart_post" << endl << Omegart_post << endl;
       Omega_post = Omega_post + Omega_cube.slice(i) * Post_weights(i);
-      Rcout << "Omega_post" << endl << Omega_post << endl;
     }
   } else if(type == "max") {
     int ind = Post_weights.index_max();

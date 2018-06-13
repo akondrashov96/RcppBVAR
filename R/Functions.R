@@ -262,5 +262,3 @@ BVAR_conj_estimate <- function(mod_setup, keep = 2000, n_chains = 1, verbose = F
   
   return(output)
 }
-
-
