@@ -226,7 +226,7 @@ List BCVAR_conj_setup(arma::mat series, int p, int v_prior,
 
 //[[Rcpp::export()]]
 List BCVAR_conj_est(List setup, int keep, std::string type, bool verbose = false, 
-                    int n_chains = 1, int n_phi = 5) {
+                    int n_chains = 1, int n_phi = 10) {
   
   arma::mat X = setup["X"];
   arma::mat Y = setup["Y"];
@@ -260,12 +260,12 @@ List BCVAR_conj_est(List setup, int keep, std::string type, bool verbose = false
   
   for (int m_l = m_min ; m_l < m_max + 1 ; ++m_l) {
     if (verbose) {
-      Rcout << "Model: m_l = " << m_l << ", phi = ";
+      Rcout << "Model: m_l = " << m_l << ", phi = " << 1 << " ";
     }
     for (int j = 0 ; j < n_phi ; ++j) {
       
-      if (verbose) {
-        Rcout <<  j + 1 << ' ';
+      if (verbose && ( (j + 1) % 10 == 0) ) {
+        Rcout <<  j + 1 << " ";
       }
       
       Cmat = RPmat(m_l, K);
@@ -339,6 +339,19 @@ List BCVAR_conj_est(List setup, int keep, std::string type, bool verbose = false
   setup["S_post"] = S_post;
   setup["Omega_post"] = Omega_post;
   setup["Phi_post"] = Phi_post;
+  
+  arma::mat U;
+  arma::vec s;
+  arma::mat V;
+  svd(U, s, V, X_star);
+  
+  arma::mat diag_inv = zeros<mat>(s.n_elem, s.n_elem);
+  diag_inv.diag() = 1/s;
+  
+  arma::mat Omega_root = V * diag_inv * V.t();
+  arma::mat Omega = Omega_root * Omega_root;
+  
+  setup["Omega_post_check"] = Omega;
   
   return setup;
 

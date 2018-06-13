@@ -9,7 +9,7 @@ BCVAR_conj_setup <- function(series, p, v_prior, Omega, S, Phi, include_const = 
     .Call(`_RcppBVAR_BCVAR_conj_setup`, series, p, v_prior, Omega, S, Phi, include_const)
 }
 
-BCVAR_conj_est <- function(setup, keep, type, verbose = FALSE, n_chains = 1L, n_phi = 5L) {
+BCVAR_conj_est <- function(setup, keep, type, verbose = FALSE, n_chains = 1L, n_phi = 10L) {
     .Call(`_RcppBVAR_BCVAR_conj_est`, setup, keep, type, verbose, n_chains, n_phi)
 }
 
