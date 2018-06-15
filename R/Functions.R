@@ -262,3 +262,149 @@ BVAR_conj_estimate <- function(mod_setup, keep = 2000, n_chains = 1, verbose = F
   
   return(output)
 }
+
+#' Create a setup for Conjugate Normal Inverse Wishart Bayesian Compressed VAR model
+#'
+#' Assemble all prior and hyperparameter data from provided prior hyperparameters.
+#'
+#' The function takes hyperparameter data and constructs a list of data suitable for 
+#' \code{BCVAR_conj_est()} function. Calculations are done by a C++ function (callable to R as \code{BCVAR_conj_setup}).
+#' 
+#'
+#' @param series Time series for estimation.
+#' 
+#' @param p Number of lags.
+#' 
+#' @param v_prior Prior value of hyperparameter nu. By default \code{m + 2}.
+#' 
+#' @param Omega Prior Omega (variance matrix for coefficient lags) matrix hyperparameter
+#' 
+#' @param S Prior covariance matrix hyperparameter
+#' 
+#' @param Phi Prior Phi (coefficient matrix) matrix hyperparameter
+#' 
+#' @param include_const Default \code{TRUE}. Whether to include the constant in the model.
+#' 
+#' @return A list containing: Y and X matrices, X_plus and Y_plus matrices, v_prior, p and whether constant is 
+#' included.
+#' 
+#' @export
+#' @example
+#' ### Dummy code: do not run ###
+#' data(series)
+#' setup <- BCVAR_cNIW_setup(series, p = 4, v_prior = NULL, Omega, S, Phi, include_const = TRUE)
+
+BCVAR_cNIW_setup <- function(series, p = 4, v_prior = NULL, Omega, S, Phi, include_const = TRUE) {
+  
+  if (is.null(v_prior)) {
+    v_prior <- ncol(series) + 2
+  }
+  
+  output <- BCVAR_conj_setup(series = series, p = p, v_prior = v_prior, Omega = Omega, 
+                             S = S, Phi = Phi, include_const = include_const)
+  
+  eqNames <- colnames(series)
+  
+  colnames(output$Y) <- eqNames
+  colnames(output$Y_plus) <- eqNames
+  nameVec <- paste(eqNames, ", p = ", 
+                   rep(1:p, each = length(eqNames)), 
+                   sep = "")
+  
+  if (include_const) {
+    nameVec <- c(nameVec, "const")
+  }
+  
+  colnames(output$X) <- nameVec
+  colnames(output$X_plus) <- nameVec
+  
+  return(output)
+}
+
+#' Estimate Conjugate Normal Inverse Wishart Bayesian Compressed VAR model
+#'
+#' Obtain posterior parameters and a sample of Phi and sigma matrix
+#' 
+#' The function takes prior parameters (from \code{BVAR_conj_setup}) and estimates the model.
+#' 
+#' @param setup The setup provided by \code{BVAR_conj_setup}.
+#' 
+#' @param keep Number of simulations. If set to 0, no simulation sample is created, only posterior parameters.
+#' 
+#' @param type \code{"all"} or \code{"max"}. Defines what model to takes: 
+#' \code{"max"} takes model with best compression (lowest BIC) and \code{"all"} takes weighted average of all models.
+#' 
+#' @param verbose Whether to include messages.
+#' 
+#' @param n_chains Number of chains (for convergence). Generally not needed for conjugate BVARs. Default is 1.
+#' 
+#' @param n_phi Number of compressions for each \code{m}.
+#' 
+#' @return A list with: setup parameters (priors), posterior parameters (S, Phi, Omega and v), 
+#' and sample, if requested.
+#' 
+#' @export
+#' @example 
+#' ### Dummy code: Do not run ###
+#' data(series)
+#' setup <- BCVAR_cNIW_setup(series, p = 4, delta = 1, include_const = TRUE, y_bar_type = "initial")
+#' estim <- BCVAR_cNIW_estimate(mod_setup, keep, type, verbose = FALSE, n_chains = 1, n_phi = 10)
+#'
+
+BCVAR_cNIW_estimate <- function(mod_setup, keep, type, verbose = FALSE, n_chains = 1, n_phi = 10) {
+  
+  output <- BCVAR_conj_est(setup = mod_setup, keep = keep, type = type, 
+                           verbose = verbose, n_chains = n_chains, n_phi = n_phi)
+  
+  eqNames <- colnames(mod_setup$Y)
+  p <- mod_setup$p
+  
+  colnames(output$Y) <- eqNames
+  colnames(output$Y_plus) <- eqNames
+  
+  nameVec <- paste(eqNames, ", p = ", 
+                   rep(1:p, each = length(eqNames)), 
+                   sep = "")
+  
+  if (mod_setup$Constant) {
+    nameVec <- c(nameVec, "const")
+  }
+  
+  colnames(output$X) <- nameVec
+  colnames(output$X_plus) <- nameVec
+  
+  colnames(output$Phi_prior) <- paste("eq.", eqNames, sep = "")
+  rownames(output$Phi_prior) <- nameVec
+  
+  colnames(output$Omega_prior) <- nameVec
+  rownames(output$Omega_prior) <- nameVec
+  
+  colnames(output$S_prior) <- eqNames
+  rownames(output$S_prior) <- eqNames
+  
+  colnames(output$Phi_post) <- paste("eq.", eqNames, sep = "")
+  rownames(output$Phi_post) <- nameVec
+  
+  colnames(output$Omega_post) <- nameVec
+  rownames(output$Omega_post) <- nameVec
+  
+  colnames(output$S_post) <- eqNames
+  rownames(output$S_post) <- eqNames
+  
+  colnames(output$Phi_cube) <- paste("eq.", eqNames, sep = "")
+  rownames(output$Phi_cube) <- nameVec
+  
+  colnames(output$S_cube) <- eqNames
+  rownames(output$S_cube) <- eqNames
+  
+  Phinames <- paste("eq.", sep = "", rep(eqNames, each = ncol(output$X)), " ", 
+                    rep(x = nameVec, length(eqNames)))
+  Snames <- paste("eq.", sep = "", rep(eqNames, each = length(eqNames)), " ", 
+                  rep(eqNames, length(eqNames)))
+  
+  for (i in 1:length(output$sample)){
+    colnames(output$sample[[i]]) <- c(Phinames, Snames)
+  }
+  
+  return(output)
+}
