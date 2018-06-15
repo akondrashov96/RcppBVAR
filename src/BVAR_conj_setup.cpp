@@ -48,6 +48,7 @@ List ARp(arma::vec series, int p = 1) {
   arma::vec resid = Y - X * coefs.t();
   
   return List::create(Named("AR1") = AR_1,
+                      Named("coefs") = coefs,
                       Named("res") = resid);
 }
 
