@@ -328,18 +328,6 @@ List BCVAR_conj_est(List setup, int keep, std::string type, bool verbose = false
   int v_prior = setup["v_prior"];
   int v_post = v_prior + nT;
   
-  if (verbose) {
-    Rcout << "Simulating..." << endl;
-  }
-  if (keep > 0) {
-    setup["sample"] = BCVAR_simulate(v_post, Omegart_post, S_post, Phi_post, verbose, keep, n_chains);
-  }
-  
-  setup["v_post"] = v_post;
-  setup["S_post"] = S_post;
-  setup["Omega_post"] = Omega_post;
-  setup["Phi_post"] = Phi_post;
-  
   arma::mat U;
   arma::vec s;
   arma::mat V;
@@ -351,7 +339,21 @@ List BCVAR_conj_est(List setup, int keep, std::string type, bool verbose = false
   arma::mat Omega_root = V * diag_inv * V.t();
   arma::mat Omega = Omega_root * Omega_root;
   
-  setup["Omega_post_check"] = Omega;
+  setup["Omega_post"] = Omega;
+  setup["Phi_cube"] = Phi_cube;
+  setup["S_cube"] = S_cube;
+  
+  if (verbose) {
+    Rcout << "Simulating..." << endl;
+  }
+  if (keep > 0) {
+    setup["sample"] = BCVAR_simulate(v_post, Omegart_post, S_post, Phi_post, verbose, keep, n_chains);
+  }
+  
+  setup["v_post"] = v_post;
+  setup["S_post"] = S_post;
+  //setup["Omega_post"] = Omega_post;
+  setup["Phi_post"] = Phi_post;
   
   return setup;
 

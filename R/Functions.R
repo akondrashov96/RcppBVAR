@@ -353,6 +353,9 @@ BCVAR_cNIW_setup <- function(series, p = 4, v_prior = NULL, Omega, S, Phi, inclu
 
 BCVAR_cNIW_estimate <- function(mod_setup, keep, type, verbose = FALSE, n_chains = 1, n_phi = 10) {
   
+  if (verbose) {
+    message("Passing to C++...")
+  }
   output <- BCVAR_conj_est(setup = mod_setup, keep = keep, type = type, 
                            verbose = verbose, n_chains = n_chains, n_phi = n_phi)
   

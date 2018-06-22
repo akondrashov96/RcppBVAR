@@ -262,6 +262,8 @@ BEGIN_RCPP
 END_RCPP
 }
 
+RcppExport SEXP _RcppBVAR_sqm(SEXP);
+
 static const R_CallMethodDef CallEntries[] = {
     {"_RcppBVAR_RPmat", (DL_FUNC) &_RcppBVAR_RPmat, 2},
     {"_RcppBVAR_BCVAR_conj_setup", (DL_FUNC) &_RcppBVAR_BCVAR_conj_setup, 7},
@@ -280,6 +282,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_RcppBVAR_Forecast", (DL_FUNC) &_RcppBVAR_Forecast, 2},
     {"_RcppBVAR_freqVAR", (DL_FUNC) &_RcppBVAR_freqVAR, 3},
     {"_RcppBVAR_genVAR", (DL_FUNC) &_RcppBVAR_genVAR, 3},
+    {"_RcppBVAR_sqm",                (DL_FUNC) &_RcppBVAR_sqm,                 1},
     {NULL, NULL, 0}
 };
 
