@@ -6,6 +6,14 @@
 using namespace Rcpp;
 using namespace arma;
 
+//[[Rcpp::export]]
+arma::cx_mat testFunc(arma::mat X) {
+  arma::mat Y = symmatu(X);
+  Rcout << "Y" << endl << Y << endl;
+  arma::cx_mat Z = sqrtmat(Y);
+  return(Z);
+}
+
 List makeData(arma::mat series, int p, bool include_const = true) {
   
   int k = series.n_cols, n = series.n_rows;
@@ -117,6 +125,10 @@ List BCVAR_dum2hyp(arma::mat Y_star, arma::mat X_star, arma::mat Cmat, bool verb
   arma::mat S = E_star.t() * E_star;
   
   arma::mat Phi_star_U = Cmat.t() * CPhi_star;
+  
+  arma::mat Omega_U2 = Phi_star_U * pinv(X_star.t() * Y_star);
+  Omega_U2 = symmatu(Omega_U2);
+  
   arma::mat Omegart_U = Cmat.t() * Omega_root * Cmat;
   arma::mat Omega_U = Cmat.t() * Omega * Cmat;
   
@@ -124,6 +136,7 @@ List BCVAR_dum2hyp(arma::mat Y_star, arma::mat X_star, arma::mat Cmat, bool verb
                       Named("Omega") = Omega,
                       Named("Omegart_U") = Omegart_U,
                       Named("Omega_U") = Omega_U,
+                      Named("Omega_U2") = Omega_U2,
                       Named("E_star") = E_star,
                       Named("S") = S,
                       Named("Phi_star") = CPhi_star,
@@ -194,6 +207,69 @@ List BCVAR_simulate(int v_post, arma::mat Omega_root_post, arma::mat S_post, arm
   return sims;
 }
 
+
+// List BCVAR_cx_simulate(int v_post, arma::cx_mat Omega_root_post, arma::mat S_post, arma::mat Phi_post, 
+//                     bool verbose = false, int keep = 10, int chains = 1) {
+//   
+//   int k = Phi_post.n_rows, m = Phi_post.n_cols;
+//   
+//   int thres = keep / 10;
+//   if (k > 80) {
+//     Rcout << "The model contains over 80 parameters. " << endl <<
+//       "Verbose is set to TRUE and messages are shown more frequently to assess progress" << endl;
+//     thres = 50;
+//     verbose = true;
+//   }
+//   
+//   List sims;
+//   arma::cx_mat answer = zeros<mat>(keep, m * k + m * m);
+//   arma::mat Sigma, V;
+//   arma::cx_mat Phi;
+//   arma::cx_vec Phi_vec, plug_in;
+//   arma::vec Sigma_vec;
+//   
+//   for (int chain = 0 ; chain < chains ; ++chain) {
+//     if (verbose) {
+//       Rcout << "===============================================" << endl;
+//       Rcout << "Chain: " << chain + 1 << " out of " << chains << endl;
+//       Rcout << "===============================================" << endl;
+//     }
+//     for (int i = 0 ; i < keep ; ++i ) {
+//       if (verbose && (i % thres == 0) ) {
+//         Rcout << "Iteration " << i + 1 << " out of " << keep << endl;
+//       }
+//       
+//       if (verbose && (i % thres == 0) ) {
+//         Rcout << i << ": Calculating Sigma... " << "\t";
+//       }
+//       Sigma = iwishrnd(S_post, v_post);
+//       V = randn<mat>(k, m);
+//       
+//       if (verbose && (i % thres == 0) ) {
+//         Rcout << "Calculating Phi... " << endl;
+//       }
+//       Phi = Phi_post + Omega_root_post * V * chol(Sigma);
+//       
+//       Phi_vec = vectorise(Phi);
+//       Sigma_vec = vectorise(Sigma);
+//       plug_in = join_cols(Phi_vec, Sigma_vec);
+//       
+//       answer.row(i) = plug_in.t();
+//       
+//     }
+//     if (verbose) {
+//       Rcout << endl;
+//     }
+//     sims["chain" + std::to_string(chain + 1)] = answer;
+//     answer = zeros<mat>(keep, m * k + m * m);
+//   }
+//   
+//   if (verbose) {
+//     Rcout << "Done!" << endl;
+//   }
+//   return sims;
+// }
+
 //[[Rcpp::export()]]
 List BCVAR_conj_setup(arma::mat series, int p, int v_prior, 
                       arma::mat Omega, arma::mat S, arma::mat Phi,
@@ -247,7 +323,8 @@ List BCVAR_conj_est(List setup, int keep, std::string type, bool verbose = false
   }
   
   int m_max = 5 * round(log(K));
-  int m_min = 1;
+  //int m_min = 1;
+  int m_min = round(log(K));
   int Model_N = 0;
   arma::mat Cmat, CX_star;
   arma::vec BIC = zeros<vec>(m_max * n_phi);
@@ -256,7 +333,8 @@ List BCVAR_conj_est(List setup, int keep, std::string type, bool verbose = false
   arma::cube Phi_cube(K, M, m_max * n_phi), 
              S_cube(M, M, m_max * n_phi), 
              Omegart_cube(K, K, m_max * n_phi),
-             Omega_cube(K, K, m_max * n_phi);
+             Omega_cube(K, K, m_max * n_phi),
+             Omega_2_cube(K, K, m_max * n_phi);
   
   for (int m_l = m_min ; m_l < m_max + 1 ; ++m_l) {
     if (verbose) {
@@ -279,6 +357,7 @@ List BCVAR_conj_est(List setup, int keep, std::string type, bool verbose = false
       S_cube.slice(Model_N) = as<mat>(post_hyp["S"]);
       Omegart_cube.slice(Model_N) = as<mat>(post_hyp["Omegart_U"]);
       Omega_cube.slice(Model_N) = as<mat>(post_hyp["Omega_U"]);
+      Omega_2_cube.slice(Model_N) = as<mat>(post_hyp["Omega_U2"]);
       
       Model_N++;
     }
@@ -301,6 +380,7 @@ List BCVAR_conj_est(List setup, int keep, std::string type, bool verbose = false
   arma::mat S_post = zeros<mat>(M, M);
   arma::mat Omegart_post = zeros<mat>(K, K);
   arma::mat Omega_post = zeros<mat>(K, K);
+  arma::mat Omega_2_post = zeros<mat>(K, K);
   
   if (type == "all") {
     for (int i = 0 ; i < Post_weights.n_elem ; ++i) {
@@ -308,6 +388,7 @@ List BCVAR_conj_est(List setup, int keep, std::string type, bool verbose = false
       S_post = S_post + S_cube.slice(i) * Post_weights(i);
       Omegart_post = Omegart_post + Omegart_cube.slice(i) * Post_weights(i);
       Omega_post = Omega_post + Omega_cube.slice(i) * Post_weights(i);
+      Omega_2_post = Omega_2_post + Omega_2_cube.slice(i) * Post_weights(i);
     }
   } else if(type == "max") {
     int ind = Post_weights.index_max();
@@ -328,6 +409,7 @@ List BCVAR_conj_est(List setup, int keep, std::string type, bool verbose = false
   int v_prior = setup["v_prior"];
   int v_post = v_prior + nT;
   
+  // full Omega
   arma::mat U;
   arma::vec s;
   arma::mat V;
@@ -337,9 +419,15 @@ List BCVAR_conj_est(List setup, int keep, std::string type, bool verbose = false
   diag_inv.diag() = 1/s;
   
   arma::mat Omega_root = V * diag_inv * V.t();
+  setup["Omega_root_orig"] = Omega_root;
+  setup["Omegart_post"] = Omegart_post;
   arma::mat Omega = Omega_root * Omega_root;
   
+  arma::cx_mat Omegaroot_3 = sqrtmat(Omega_2_post);
+  
   setup["Omega_post"] = Omega;
+  setup["Omega_post2"] = Omega_post;
+  setup["Omega_post3"] = Omega_2_post;
   setup["Phi_cube"] = Phi_cube;
   setup["S_cube"] = S_cube;
   
@@ -348,6 +436,8 @@ List BCVAR_conj_est(List setup, int keep, std::string type, bool verbose = false
   }
   if (keep > 0) {
     setup["sample"] = BCVAR_simulate(v_post, Omegart_post, S_post, Phi_post, verbose, keep, n_chains);
+    //setup["sample"] = BCVAR_simulate(v_post, Omega_root, S_post, Phi_post, verbose, keep, n_chains);
+    //setup["sample"] = BCVAR_cx_simulate(v_post, Omegaroot_3, S_post, Phi_post, verbose, keep, n_chains);
   }
   
   setup["v_post"] = v_post;
