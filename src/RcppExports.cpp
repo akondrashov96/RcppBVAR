@@ -6,6 +6,62 @@
 
 using namespace Rcpp;
 
+// testFunc
+arma::cx_mat testFunc(arma::mat X);
+RcppExport SEXP _RcppBVAR_testFunc(SEXP XSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type X(XSEXP);
+    rcpp_result_gen = Rcpp::wrap(testFunc(X));
+    return rcpp_result_gen;
+END_RCPP
+}
+// RPmat
+arma::mat RPmat(int m_l, int K);
+RcppExport SEXP _RcppBVAR_RPmat(SEXP m_lSEXP, SEXP KSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type m_l(m_lSEXP);
+    Rcpp::traits::input_parameter< int >::type K(KSEXP);
+    rcpp_result_gen = Rcpp::wrap(RPmat(m_l, K));
+    return rcpp_result_gen;
+END_RCPP
+}
+// BCVAR_conj_setup
+List BCVAR_conj_setup(arma::mat series, int p, int v_prior, arma::mat Omega, arma::mat S, arma::mat Phi, bool include_const);
+RcppExport SEXP _RcppBVAR_BCVAR_conj_setup(SEXP seriesSEXP, SEXP pSEXP, SEXP v_priorSEXP, SEXP OmegaSEXP, SEXP SSEXP, SEXP PhiSEXP, SEXP include_constSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type series(seriesSEXP);
+    Rcpp::traits::input_parameter< int >::type p(pSEXP);
+    Rcpp::traits::input_parameter< int >::type v_prior(v_priorSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type Omega(OmegaSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type S(SSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type Phi(PhiSEXP);
+    Rcpp::traits::input_parameter< bool >::type include_const(include_constSEXP);
+    rcpp_result_gen = Rcpp::wrap(BCVAR_conj_setup(series, p, v_prior, Omega, S, Phi, include_const));
+    return rcpp_result_gen;
+END_RCPP
+}
+// BCVAR_conj_est
+List BCVAR_conj_est(List setup, int keep, std::string type, bool verbose, int n_chains, int n_phi);
+RcppExport SEXP _RcppBVAR_BCVAR_conj_est(SEXP setupSEXP, SEXP keepSEXP, SEXP typeSEXP, SEXP verboseSEXP, SEXP n_chainsSEXP, SEXP n_phiSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< List >::type setup(setupSEXP);
+    Rcpp::traits::input_parameter< int >::type keep(keepSEXP);
+    Rcpp::traits::input_parameter< std::string >::type type(typeSEXP);
+    Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
+    Rcpp::traits::input_parameter< int >::type n_chains(n_chainsSEXP);
+    Rcpp::traits::input_parameter< int >::type n_phi(n_phiSEXP);
+    rcpp_result_gen = Rcpp::wrap(BCVAR_conj_est(setup, keep, type, verbose, n_chains, n_phi));
+    return rcpp_result_gen;
+END_RCPP
+}
 // CalcQuantiles
 arma::mat CalcQuantiles(const arma::mat& X, const arma::vec& q);
 RcppExport SEXP _RcppBVAR_CalcQuantiles(SEXP XSEXP, SEXP qSEXP) {
@@ -15,19 +71,6 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const arma::mat& >::type X(XSEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type q(qSEXP);
     rcpp_result_gen = Rcpp::wrap(CalcQuantiles(X, q));
-    return rcpp_result_gen;
-END_RCPP
-}
-// prepData
-List prepData(arma::mat series, int p, bool include_const);
-RcppExport SEXP _RcppBVAR_prepData(SEXP seriesSEXP, SEXP pSEXP, SEXP include_constSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat >::type series(seriesSEXP);
-    Rcpp::traits::input_parameter< int >::type p(pSEXP);
-    Rcpp::traits::input_parameter< bool >::type include_const(include_constSEXP);
-    rcpp_result_gen = Rcpp::wrap(prepData(series, p, include_const));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -90,14 +133,15 @@ BEGIN_RCPP
 END_RCPP
 }
 // conj_dum2hyp
-List conj_dum2hyp(arma::mat Y_star, arma::mat X_star);
-RcppExport SEXP _RcppBVAR_conj_dum2hyp(SEXP Y_starSEXP, SEXP X_starSEXP) {
+List conj_dum2hyp(arma::mat Y_star, arma::mat X_star, bool verbose);
+RcppExport SEXP _RcppBVAR_conj_dum2hyp(SEXP Y_starSEXP, SEXP X_starSEXP, SEXP verboseSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< arma::mat >::type Y_star(Y_starSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type X_star(X_starSEXP);
-    rcpp_result_gen = Rcpp::wrap(conj_dum2hyp(Y_star, X_star));
+    Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
+    rcpp_result_gen = Rcpp::wrap(conj_dum2hyp(Y_star, X_star, verbose));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -215,15 +259,31 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// genVAR
+List genVAR(int nT, int p, int k);
+RcppExport SEXP _RcppBVAR_genVAR(SEXP nTSEXP, SEXP pSEXP, SEXP kSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type nT(nTSEXP);
+    Rcpp::traits::input_parameter< int >::type p(pSEXP);
+    Rcpp::traits::input_parameter< int >::type k(kSEXP);
+    rcpp_result_gen = Rcpp::wrap(genVAR(nT, p, k));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_RcppBVAR_testFunc", (DL_FUNC) &_RcppBVAR_testFunc, 1},
+    {"_RcppBVAR_RPmat", (DL_FUNC) &_RcppBVAR_RPmat, 2},
+    {"_RcppBVAR_BCVAR_conj_setup", (DL_FUNC) &_RcppBVAR_BCVAR_conj_setup, 7},
+    {"_RcppBVAR_BCVAR_conj_est", (DL_FUNC) &_RcppBVAR_BCVAR_conj_est, 6},
     {"_RcppBVAR_CalcQuantiles", (DL_FUNC) &_RcppBVAR_CalcQuantiles, 2},
-    {"_RcppBVAR_prepData", (DL_FUNC) &_RcppBVAR_prepData, 3},
     {"_RcppBVAR_ARp", (DL_FUNC) &_RcppBVAR_ARp, 2},
     {"_RcppBVAR_conj_delta", (DL_FUNC) &_RcppBVAR_conj_delta, 3},
     {"_RcppBVAR_conj_sigma", (DL_FUNC) &_RcppBVAR_conj_sigma, 3},
     {"_RcppBVAR_conj_lam2dum", (DL_FUNC) &_RcppBVAR_conj_lam2dum, 10},
-    {"_RcppBVAR_conj_dum2hyp", (DL_FUNC) &_RcppBVAR_conj_dum2hyp, 2},
+    {"_RcppBVAR_conj_dum2hyp", (DL_FUNC) &_RcppBVAR_conj_dum2hyp, 3},
     {"_RcppBVAR_conj_simulate", (DL_FUNC) &_RcppBVAR_conj_simulate, 7},
     {"_RcppBVAR_BVAR_cniw_setup", (DL_FUNC) &_RcppBVAR_BVAR_cniw_setup, 11},
     {"_RcppBVAR_BVAR_cniw_est", (DL_FUNC) &_RcppBVAR_BVAR_cniw_est, 4},
@@ -231,6 +291,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_RcppBVAR_BVAR", (DL_FUNC) &_RcppBVAR_BVAR, 7},
     {"_RcppBVAR_Forecast", (DL_FUNC) &_RcppBVAR_Forecast, 2},
     {"_RcppBVAR_freqVAR", (DL_FUNC) &_RcppBVAR_freqVAR, 3},
+    {"_RcppBVAR_genVAR", (DL_FUNC) &_RcppBVAR_genVAR, 3},
     {NULL, NULL, 0}
 };
 

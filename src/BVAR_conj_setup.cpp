@@ -1,6 +1,7 @@
 #include <RcppArmadillo.h>
 //[[Rcpp::plugins(cpp11)]]
 //[[Rcpp::depends(RcppArmadillo)]]
+#include "include/prepData.h"
 
 using namespace Rcpp;
 using namespace arma;
@@ -19,34 +20,6 @@ arma::mat CalcQuantiles(const arma::mat& X, const arma::vec& q) {
   }
   
   return quantiles;
-}
-
-// creates X and Y matrices from provided series
-//[[Rcpp::export()]]
-List prepData(arma::mat series, int p, bool include_const = true) {
-  
-  int k = series.n_cols, n = series.n_rows;
-  
-  arma::mat Y = series.rows(p, n - 1);
-  arma::mat X = series.rows(p - 1, n - 2);
-  arma::mat X_1;
-  
-  for (int i = 2; i < p + 1; ++i) {
-    X_1 = series.rows(p - i, n - 1 - i);
-    X = join_rows(X, X_1);
-  }
-  
-  if (include_const) {
-    arma::vec intcpt(n - p) ;
-    intcpt.fill(1) ;
-    X = join_rows(X, intcpt) ;
-  }
-  
-  return List::create(Named("Y") = Y,
-                      Named("X") = X,
-                      Named("k") = k,
-                      Named("n") = n,
-                      Named("p") = p);
 }
 
 //estimate AR1 model for delta func
@@ -75,6 +48,7 @@ List ARp(arma::vec series, int p = 1) {
   arma::vec resid = Y - X * coefs.t();
   
   return List::create(Named("AR1") = AR_1,
+                      Named("coefs") = coefs,
                       Named("res") = resid);
 }
 
@@ -294,7 +268,7 @@ List conj_lam2dum(arma::mat series, arma::vec lam, int p, arma::vec delt,
 }
 
 //[[Rcpp::export()]]
-List conj_dum2hyp(arma::mat Y_star, arma::mat X_star) {
+List conj_dum2hyp(arma::mat Y_star, arma::mat X_star, bool verbose = false) {
   
   arma::mat U;
   arma::vec s;
@@ -304,11 +278,24 @@ List conj_dum2hyp(arma::mat Y_star, arma::mat X_star) {
   arma::mat diag_inv = zeros<mat>(s.n_elem, s.n_elem);
   diag_inv.diag() = 1/s;
   
+  if (verbose) {
+    Rcout << "Calculating Omega..." << endl;
+  }
+  
   arma::mat Omega_root = V * diag_inv * V.t();
   arma::mat Omega = Omega_root * Omega_root;
   
+  if (verbose) {
+    Rcout << "Calculating Phi..." << endl;
+  }
+  
   arma::mat Phi_star = Omega * (X_star.t() * Y_star);
   arma::mat E_star = Y_star - X_star * Phi_star;
+  
+  if (verbose) {
+    Rcout << "Calculating S..." << endl;
+  }
+  
   arma::mat S = E_star.t() * E_star;
   
   return List::create(Named("Omega_root") = Omega_root,
@@ -327,6 +314,14 @@ List conj_simulate(int v_post, arma::mat Omega_root_post, arma::mat S_post, arma
   
   int k = Phi_post.n_rows, m = Phi_post.n_cols;
   
+  int thres = keep / 10;
+  if (k > 80) {
+    Rcout << "The model contains over 80 parameters. " << endl <<
+      "Verbose is set to TRUE and messages are shown more frequently to assess progress" << endl;
+    thres = 50;
+    verbose = true;
+  }
+  
   List sims;
   arma::mat answer = zeros<mat>(keep, m * k + m * m);
   arma::mat Sigma, V, Phi;
@@ -339,12 +334,19 @@ List conj_simulate(int v_post, arma::mat Omega_root_post, arma::mat S_post, arma
       Rcout << "===============================================" << endl;
     }
     for (int i = 0 ; i < keep ; ++i ) {
-      if (verbose && (i % 1000 == 0) ) {
+      if (verbose && (i % thres == 0) ) {
         Rcout << "Iteration " << i + 1 << " out of " << keep << endl;
       }
       
+      if (verbose && (i % thres == 0) ) {
+        Rcout << i << ": Calculating Sigma... " << "\t";
+      }
       Sigma = iwishrnd(S_post, v_post);
       V = randn<mat>(k, m);
+      
+      if (verbose && (i % thres == 0) ) {
+        Rcout << "Calculating Phi... " << endl;
+      }
       Phi = Phi_post + Omega_root_post * V * chol(Sigma);
       
       Phi_vec = vectorise(Phi);
@@ -361,6 +363,9 @@ List conj_simulate(int v_post, arma::mat Omega_root_post, arma::mat S_post, arma
     answer = zeros<mat>(keep, m * k + m * m);
   }
 
+  if (verbose) {
+    Rcout << "Done!" << endl;
+  }
   return sims;
 }
 
@@ -379,7 +384,7 @@ List BVAR_cniw_setup (arma::mat series, arma::vec lam, int p, arma::vec delt, in
   List dum = conj_lam2dum(series, lam, p, delt, s2_lag, Z, 
                           y_bar_type, include_const, delttypeAR1, carriero_hack);
   
-  // pretty much uneeded, but I'll leave it just in case
+  // pretty much unneeded, but I'll leave it just in case
   if (v_prior < 0) {
     v_prior = m + 2;
   }
@@ -442,6 +447,11 @@ List BVAR_cniw_forecast(List model, arma::mat series, Rcpp::Nullable<arma::mat> 
   
   // import data from model
   // assume that series data is ALWAYS present - no need to restore it
+  
+  if (verbose) {
+    Rcout << "R passed the data to C++. Commencing." << endl;
+  }
+  
   StringVector include;
   if (include_.isNotNull()) {
     include = include_.get();
@@ -456,6 +466,10 @@ List BVAR_cniw_forecast(List model, arma::mat series, Rcpp::Nullable<arma::mat> 
     level = {80, 95};
   }
   
+  if (verbose) {
+    Rcout << "Copying parameters..." << endl;
+  }
+  
   bool constant = model["Constant"];
   arma::mat Y = as<mat>(model["Y"]);
   arma::mat X = as<mat>(model["X"]);
@@ -463,6 +477,10 @@ List BVAR_cniw_forecast(List model, arma::mat series, Rcpp::Nullable<arma::mat> 
   
   int nT = Y.n_rows, p = model["p"], 
       k = X.n_cols, m = Y.n_cols; 
+  
+  if (verbose) {
+    Rcout << "Checking data for errors..." << endl;
+  }
   
   // check for errors in data
   arma::mat Zf;
@@ -517,6 +535,10 @@ List BVAR_cniw_forecast(List model, arma::mat series, Rcpp::Nullable<arma::mat> 
     keep = 1;
     
     type = "credible"; // to avoid epsilon simulation
+  }
+  
+  if (verbose) {
+    Rcout << "Initialisation of forecasting variables..." << endl;
   }
   
   // initialise matrix for forecasted values
